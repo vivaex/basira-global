@@ -14,8 +14,8 @@ export default function MemoryTest() {
 
   const startLevel = (isNewGame = false) => {
     if (isNewGame) { setScore(0); setLevel(1); }
-    const shapeCount = Math.min(level + 2, 8);
-    const timeToMemorize = Math.max(4 - Math.floor(level / 3), 2);
+    const shapeCount = Math.min(level + 2, 8); // مستوى 1 = 3 أشكال، مستوى 5 = 7 أشكال
+    const timeToMemorize = Math.max(4 - Math.floor(level / 2), 2); // الوقت يقل مع المستويات
     const shuffled = [...SHAPES].sort(() => 0.5 - Math.random());
     setTargetShapes(shuffled.slice(0, shapeCount));
     setSelectedShapes([]);
@@ -41,13 +41,12 @@ export default function MemoryTest() {
     if (newSelection.length === targetShapes.length) {
       const isCorrect = JSON.stringify(newSelection) === JSON.stringify(targetShapes);
       if (isCorrect) {
-        const newScore = score + (level * 10);
-        setScore(newScore);
+        const nextScore = score + (level * 10);
+        setScore(nextScore);
         if (level < 5) {
-          setTimeout(() => { setLevel(level + 1); setGameState('start'); }, 500);
+          setTimeout(() => { setLevel(l => l + 1); setGameState('start'); }, 600);
         } else {
-          // حفظ النتيجة النهائية للذاكرة
-          localStorage.setItem('memoryScore', newScore.toString());
+          localStorage.setItem('memoryScore', nextScore.toString());
           setGameState('result');
         }
       } else {
@@ -62,37 +61,39 @@ export default function MemoryTest() {
       <div className="bg-slate-800 p-10 rounded-[2.5rem] border-4 border-blue-500/20 shadow-2xl max-w-2xl w-full text-center">
         {gameState === 'start' && (
           <div>
-            <h1 className="text-4xl font-black mb-6 text-blue-400">المستوى {level}</h1>
-            <button onClick={() => startLevel()} className="bg-blue-600 px-12 py-4 rounded-2xl font-bold text-xl">ابدأ التحدي 🚀</button>
+            <div className="text-blue-400 font-bold mb-2">المستوى {level} من 5</div>
+            <h1 className="text-4xl font-black mb-8 text-white">جاهز للتحدي؟</h1>
+            <button onClick={() => startLevel()} className="bg-blue-600 px-12 py-5 rounded-2xl font-bold text-2xl shadow-xl">ابدأ المستوى 🚀</button>
           </div>
         )}
         {gameState === 'memorize' && (
           <div>
-            <h2 className="text-2xl mb-8 text-yellow-400">احفظ الأشكال: {timer}</h2>
-            <div className="flex flex-wrap justify-center gap-4 text-6xl">
-              {targetShapes.map((s, i) => <span key={i} className="bg-slate-700 p-4 rounded-2xl">{s}</span>)}
+            <h2 className="text-2xl mb-8 text-yellow-400 font-bold">احفظهم بسرعة! ⏱️ {timer}</h2>
+            <div className="flex flex-wrap justify-center gap-4 text-7xl">
+              {targetShapes.map((s, i) => <span key={i} className="bg-slate-700 p-6 rounded-3xl animate-pulse">{s}</span>)}
             </div>
           </div>
         )}
         {gameState === 'recall' && (
-          <div>
-            <div className="flex flex-wrap justify-center gap-4 mb-8 min-h-[80px]">
-              {selectedShapes.map((s, i) => <span key={i} className="text-5xl">{s}</span>)}
+          <div className="animate-in fade-in">
+            <h2 className="text-2xl mb-8 text-blue-300">أين كانت الأشكال؟</h2>
+            <div className="flex flex-wrap justify-center gap-4 mb-10 min-h-[100px] border-b border-slate-700 pb-6">
+                {selectedShapes.map((s, i) => <span key={i} className="text-6xl animate-in zoom-in">{s}</span>)}
             </div>
             <div className="grid grid-cols-4 gap-3">
               {SHAPES.map((s, i) => (
-                <button key={i} onClick={() => handleShapeClick(s)} className="text-4xl p-4 bg-slate-700 rounded-xl hover:bg-blue-600 transition">{s}</button>
+                <button key={i} onClick={() => handleShapeClick(s)} className="text-4xl p-4 bg-slate-700 rounded-xl hover:bg-blue-600 transition shadow-md">{s}</button>
               ))}
             </div>
           </div>
         )}
         {gameState === 'result' && (
-          <div>
-            <h2 className="text-5xl font-black mb-6 text-green-400">انتهى الاختبار!</h2>
-            <p className="text-3xl mb-8">النتيجة: {score}</p>
+          <div className="animate-in zoom-in">
+            <h2 className="text-5xl font-black mb-6 text-green-400">كفو يا بطل! 🏆</h2>
+            <p className="text-3xl mb-8">مجموع نقاطك: {score}</p>
             <div className="flex flex-col gap-4">
-              <button onClick={() => startLevel(true)} className="bg-blue-600 py-4 rounded-xl font-bold">إعادة 🔄</button>
-              <Link href="/diagnose" className="text-slate-400 underline">العودة للبوابة</Link>
+              <button onClick={() => startLevel(true)} className="bg-blue-600 py-4 rounded-xl font-bold text-xl transition">إعادة من جديد 🔄</button>
+              <Link href="/diagnose" className="text-slate-400 underline">بوابة التشخيص</Link>
             </div>
           </div>
         )}
