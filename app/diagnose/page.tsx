@@ -6,61 +6,82 @@ export default function DiagnosePage() {
   const [step, setStep] = useState<'choice' | 'external' | 'internal'>('choice');
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-8" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-black text-center mb-12 text-blue-400 tracking-tighter">بوابة التشخيص الذكي</h1>
+    <main className="min-h-screen bg-slate-900 text-white p-6 md:p-12 font-sans" dir="rtl">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* هيدر البوابة */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            بوابة التشخيص المزدوج
+          </h1>
+          <p className="text-slate-400 text-xl font-light">اختر المسار المناسب لبدء تقييم مهارات الطفل</p>
+        </div>
 
         {step === 'choice' && (
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* خيار التشخيص الخارجي */}
-            <div onClick={() => setStep('external')} className="bg-slate-800 p-8 rounded-3xl border-2 border-blue-500/20 hover:border-blue-500 cursor-pointer transition-all shadow-xl group">
-              <div className="text-6xl mb-4 group-hover:scale-110 transition">📂</div>
-              <h2 className="text-2xl font-bold mb-4 text-blue-300">تشخيص خارجي جاهز</h2>
-              <p className="text-slate-400">ارفع تقريرك الطبي أو التربوي الحالي ليقوم النظام بتحليله.</p>
+          <div className="grid md:grid-cols-2 gap-8 animate-in fade-in zoom-in duration-500">
+            {/* بطاقة التشخيص الخارجي */}
+            <div onClick={() => setStep('external')} className="bg-slate-800/50 p-10 rounded-[2.5rem] border-2 border-blue-500/10 hover:border-blue-500 hover:bg-slate-800 transition-all cursor-pointer shadow-2xl group">
+              <div className="text-7xl mb-6 group-hover:scale-110 transition">📂</div>
+              <h2 className="text-3xl font-bold mb-4 text-blue-300">تشخيص خارجي</h2>
+              <p className="text-slate-400 text-lg leading-relaxed">لديك تقرير طبي سابق؟ ارفعه هنا ليقوم الذكاء الاصطناعي بتحليله فوراً.</p>
             </div>
 
-            {/* خيار التشخيص الداخلي */}
-            <div onClick={() => setStep('internal')} className="bg-slate-800 p-8 rounded-3xl border-2 border-purple-500/20 hover:border-purple-500 cursor-pointer transition-all shadow-xl group">
-              <div className="text-6xl mb-4 group-hover:scale-110 transition">🧪</div>
-              <h2 className="text-2xl font-bold mb-4 text-purple-300">تقييم "بصيرة" الداخلي</h2>
-              <p className="text-slate-400">ابدأ اختبارات الذكاء الاصطناعي لتقييم المهارات النمائية والأكاديمية.</p>
+            {/* بطاقة التقييم الداخلي */}
+            <div onClick={() => setStep('internal')} className="bg-slate-800/50 p-10 rounded-[2.5rem] border-2 border-purple-500/10 hover:border-purple-500 hover:bg-slate-800 transition-all cursor-pointer shadow-2xl group">
+              <div className="text-7xl mb-6 group-hover:scale-110 transition">🧪</div>
+              <h2 className="text-3xl font-bold mb-4 text-purple-300">مختبر "بصيرة"</h2>
+              <p className="text-slate-400 text-lg leading-relaxed">ابدأ سلسلة اختباراتنا التفاعلية لتقييم الذاكرة، الانتباه، والسرعة.</p>
             </div>
           </div>
         )}
 
         {step === 'external' && (
-          <div className="bg-slate-800 p-10 rounded-3xl text-center shadow-2xl border border-blue-500">
-            <h2 className="text-2xl font-bold mb-6">رفع التقرير الطبي</h2>
-            <div className="border-2 border-dashed border-slate-600 p-12 rounded-2xl mb-6">
-              <p className="text-slate-400">قريباً: رفع ملفات PDF و الصور</p>
+          <div className="bg-slate-800 p-12 rounded-[3rem] text-center shadow-2xl border border-blue-500/30 animate-in slide-in-from-bottom-10">
+            <h2 className="text-3xl font-bold mb-8 text-blue-300">مركز رفع الملفات</h2>
+            <div className="border-4 border-dashed border-slate-700 p-16 rounded-[2rem] mb-8 hover:border-blue-500 transition duration-300">
+              <p className="text-slate-500 text-xl font-bold">قريباً.. رفع ملفات الـ PDF والتحليل الذكي 🧠</p>
             </div>
-            <button onClick={() => setStep('choice')} className="text-blue-400 hover:underline">العودة للخيارات</button>
+            <button onClick={() => setStep('choice')} className="bg-slate-700 px-10 py-3 rounded-xl font-bold hover:bg-slate-600 transition">العودة للخيارات</button>
           </div>
         )}
 
         {step === 'internal' && (
-          <div className="bg-slate-800 p-10 rounded-3xl text-center shadow-2xl border border-purple-500">
-            <h2 className="text-2xl font-bold mb-6 text-purple-300">مختبر التقييم الرقمي</h2>
-            <div className="space-y-4 mb-8">
-              <div className="bg-slate-700/50 p-4 rounded-xl text-right flex justify-between">
-                <span>اختبار الذاكرة البصرية</span>
-                <span className="text-green-400">متاح الآن ✅</span>
+          <div className="bg-slate-800 p-8 md:p-12 rounded-[3rem] shadow-2xl border border-purple-500/30 animate-in slide-in-from-bottom-10">
+            <h2 className="text-3xl font-bold mb-10 text-purple-300 text-center">قائمة التقييمات التفاعلية</h2>
+            <div className="grid gap-6 max-w-2xl mx-auto">
+              
+              {/* اختبار الذاكرة البصرية */}
+              <div className="bg-slate-900/60 p-6 rounded-2xl flex justify-between items-center border border-slate-700 hover:border-blue-500 transition-all">
+                <div>
+                  <h3 className="text-xl font-bold">اختبار الذاكرة البصرية</h3>
+                  <p className="text-slate-500 text-sm">تقييم قوة حفظ الأشكال والترتيب</p>
+                </div>
+                <Link href="/diagnose/memory-test">
+                  <button className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold transition shadow-lg">ابدأ الآن ✅</button>
+                </Link>
               </div>
-              <div className="bg-slate-700/50 p-4 rounded-xl text-right opacity-50 flex justify-between">
-                <span>اختبار الانتباه والتركيز</span>
-                <span>قريباً..</span>
+
+              {/* اختبار الانتباه والسرعة */}
+              <div className="bg-slate-900/60 p-6 rounded-2xl flex justify-between items-center border border-slate-700 hover:border-purple-500 transition-all">
+                <div>
+                  <h3 className="text-xl font-bold">اختبار الانتباه والسرعة</h3>
+                  <p className="text-slate-500 text-sm">تقييم سرعة الاستجابة والتركيز</p>
+                </div>
+                <Link href="/diagnose/attention-test">
+                  <button className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-xl font-bold transition shadow-lg">ابدأ الآن 🤖</button>
+                </Link>
+              </div>
+
+              <div className="bg-slate-900/30 p-6 rounded-2xl flex justify-between items-center border border-slate-800 opacity-50 grayscale">
+                <div>
+                  <h3 className="text-xl font-bold">اختبار الإدراك السمعي</h3>
+                  <p className="text-slate-500 text-sm">قريباً في الإصدار القادم..</p>
+                </div>
               </div>
             </div>
-            
-            {/* الربط السحري مع اللعبة */}
-            <Link href="/diagnose/memory-test">
-              <button className="w-full bg-purple-600 hover:bg-purple-500 text-white px-10 py-5 rounded-2xl font-black text-xl transition shadow-lg animate-bounce">
-                ابدأ اختبار الذاكرة الآن 🚀
-              </button>
-            </Link>
-            
-            <br />
-            <button onClick={() => setStep('choice')} className="mt-6 text-slate-400 hover:underline">العودة للخيارات</button>
+            <div className="text-center mt-12">
+               <button onClick={() => setStep('choice')} className="text-slate-500 hover:text-white underline">العودة للخيارات</button>
+            </div>
           </div>
         )}
       </div>
