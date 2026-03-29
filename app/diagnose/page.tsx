@@ -1,105 +1,54 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
-export default function DiagnosePage() {
-  const [step, setStep] = useState<'choice' | 'external' | 'internal'>('choice');
-  const [done, setDone] = useState({ mem: false, att: false, aud: false });
+// قائمة الأقسام الـ 10 مع أيقوناتها
+const CATEGORIES = [
+  { id: 'auditory', title: 'مهارات السمع', icon: '🎧', color: 'border-blue-500' },
+  { id: 'visual', title: 'مهارات البصر', icon: '👁️', color: 'border-purple-500' },
+  { id: 'motor', title: 'المهارات الحركية', icon: '✍️', color: 'border-orange-500' },
+  { id: 'cognitive', title: 'الإدراك والمعالجة', icon: '🧠', color: 'border-pink-500' },
+  { id: 'attention', title: 'اختبارات الانتباه', icon: '🎯', color: 'border-red-500' },
+  { id: 'language', title: 'مهارات اللغة', icon: '💬', color: 'border-indigo-500' },
+  { id: 'reading', title: 'اختبارات القراءة', icon: '📖', color: 'border-emerald-500' },
+  { id: 'writing', title: 'مهارات الكتابة', icon: '🖋️', color: 'border-cyan-500' },
+  { id: 'math', title: 'الرياضيات والعد', icon: '🔢', color: 'border-yellow-500' },
+  { id: 'executive', title: 'المهارات التنفيذية', icon: '🧩', color: 'border-teal-500' },
+];
 
-  // فحص الحالة من ذاكرة المتصفح
-  useEffect(() => {
-    setDone({
-      mem: localStorage.getItem('memoryDone') === 'true',
-      att: localStorage.getItem('attentionDone') === 'true',
-      aud: localStorage.getItem('auditoryDone') === 'true'
-    });
-  }, [step]);
-
-  const allFinished = done.mem && done.att && done.aud;
-
+export default function DiagnosticLab() {
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-6 md:p-12 font-sans" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        {/* العنوان الرئيسي للمنظومة */}
-        <h1 className="text-5xl font-black text-center mb-12 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent italic">بوابة بصيرة للتشخيص</h1>
+    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-12 font-sans" dir="rtl">
+      <div className="max-w-6xl mx-auto">
+        
+        <header className="text-center mb-12 animate-in fade-in duration-700">
+          <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 bg-clip-text text-transparent">
+            مختبر التشخيص المتكامل
+          </h1>
+          <p className="text-slate-400 text-xl font-light">اختر المجال الذي ترغب في تقييمه الآن</p>
+        </header>
 
-        {step === 'choice' && (
-          <div className="grid md:grid-cols-2 gap-8 animate-in zoom-in">
-            {/* خيار التشخيص الخارجي */}
-            <div onClick={() => setStep('external')} className="bg-slate-800/50 p-10 rounded-[2.5rem] border-2 border-blue-500/10 hover:border-blue-500 cursor-pointer shadow-xl transition-all group">
-              <div className="text-7xl mb-4 group-hover:scale-110 transition">📂</div>
-              <h2 className="text-2xl font-bold mb-2 text-blue-300">تشخيص خارجي</h2>
-              <p className="text-slate-400 text-lg">تحليل التقارير الطبية والتربوية السابقة.</p>
-            </div>
-
-            {/* تم تعديل الاسم هنا: مختبر التشخيص */}
-            <div onClick={() => setStep('internal')} className="bg-slate-800/50 p-10 rounded-[2.5rem] border-2 border-purple-500/10 hover:border-purple-500 cursor-pointer shadow-xl transition-all group">
-              <div className="text-7xl mb-4 group-hover:scale-110 transition">🧪</div>
-              <h2 className="text-2xl font-bold mb-2 text-purple-300">مختبر التشخيص</h2>
-              <p className="text-slate-400 text-lg">الاختبارات التفاعلية الذكية والمباشرة.</p>
-            </div>
-          </div>
-        )}
-
-        {step === 'internal' && (
-          <div className="space-y-6 max-w-2xl mx-auto animate-in slide-in-from-bottom-10">
-            <h2 className="text-3xl font-bold mb-8 text-center">قائمة اختبارات التشخيص</h2>
-            
-            {/* بطاقة الذاكرة */}
-            <div className={`p-6 rounded-3xl flex justify-between items-center border-2 ${done.mem ? 'border-green-500 bg-green-500/5' : 'border-slate-700 bg-slate-800'}`}>
-              <div className="text-right">
-                <h3 className="text-xl font-bold">1. الذاكرة البصرية</h3>
-                {done.mem && <span className="text-green-400 font-bold text-sm">✅ تم الإنجاز</span>}
+        {/* شبكة الأقسام العشرة */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {CATEGORIES.map((cat) => (
+            <Link key={cat.id} href={`/diagnose/${cat.id}`}>
+              <div className={`bg-slate-900/50 p-6 rounded-[2rem] border-2 ${cat.color} hover:scale-105 transition-all cursor-pointer shadow-xl group text-center h-full flex flex-col justify-center`}>
+                <div className="text-5xl mb-4 group-hover:animate-bounce">{cat.icon}</div>
+                <h3 className="text-lg font-black text-white">{cat.title}</h3>
+                <div className="mt-2 text-xs text-slate-500 opacity-0 group-hover:opacity-100 transition">دخول المختبر ←</div>
               </div>
-              <Link href="/diagnose/memory-test">
-                <button className={`px-6 py-2 rounded-xl font-bold ${done.mem ? 'bg-slate-700 text-slate-400' : 'bg-blue-600 hover:bg-blue-500 shadow-lg'}`}>
-                  {done.mem ? 'إعادة الاختبار' : 'ابدأ الآن'}
-                </button>
-              </Link>
-            </div>
+            </Link>
+          ))}
+        </div>
 
-            {/* بطاقة الانتباه */}
-            <div className={`p-6 rounded-3xl flex justify-between items-center border-2 ${done.att ? 'border-green-500 bg-green-500/5' : 'border-slate-700 bg-slate-800'}`}>
-              <div className="text-right">
-                <h3 className="text-xl font-bold">2. الانتباه والسرعة</h3>
-                {done.att && <span className="text-green-400 font-bold text-sm">✅ تم الإنجاز</span>}
-              </div>
-              <Link href="/diagnose/attention-test">
-                <button className={`px-6 py-2 rounded-xl font-bold ${done.att ? 'bg-slate-700 text-slate-400' : 'bg-purple-600 hover:bg-purple-500 shadow-lg'}`}>
-                  {done.att ? 'إعادة الاختبار' : 'ابدأ الآن'}
-                </button>
-              </Link>
-            </div>
-
-            {/* بطاقة السمع */}
-            <div className={`p-6 rounded-3xl flex justify-between items-center border-2 ${done.aud ? 'border-green-500 bg-green-500/5' : 'border-slate-700 bg-slate-800'}`}>
-              <div className="text-right">
-                <h3 className="text-xl font-bold">3. الإدراك السمعي</h3>
-                {done.aud && <span className="text-green-400 font-bold text-sm">✅ تم الإنجاز</span>}
-              </div>
-              <Link href="/diagnose/auditory-test">
-                <button className={`px-6 py-2 rounded-xl font-bold ${done.aud ? 'bg-slate-700 text-slate-400' : 'bg-green-600 hover:bg-green-500 shadow-lg'}`}>
-                  {done.aud ? 'إعادة الاختبار' : 'ابدأ الآن'}
-                </button>
-              </Link>
-            </div>
-
-            {/* الزر السحري للتقرير النهائي */}
-            {allFinished ? (
-              <Link href="/diagnose/results" className="block mt-12 animate-bounce">
-                <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl hover:scale-105 transition-transform">
-                  عرض التقرير والتشخيص النهائي 📑🔥
-                </button>
-              </Link>
-            ) : (
-              <div className="mt-10 p-6 bg-slate-800/30 rounded-3xl border border-slate-700 text-center">
-                <p className="text-slate-500 italic">أكمل جميع الاختبارات لتفعيل التقرير والتشخيص النهائي</p>
-              </div>
-            )}
-
-            <button onClick={() => setStep('choice')} className="w-full text-slate-600 underline mt-4 hover:text-white transition">رجوع للخيارات</button>
-          </div>
-        )}
+        {/* زر التقرير النهائي (يظهر في الأسفل دائماً) */}
+        <div className="mt-16 text-center">
+           <Link href="/diagnose/results">
+              <button className="bg-slate-800 hover:bg-slate-700 text-blue-400 px-10 py-4 rounded-2xl font-bold border border-blue-500/20 transition shadow-2xl">
+                📑 الانتقال لمركز النتائج والتقارير
+              </button>
+           </Link>
+        </div>
       </div>
     </main>
   );
