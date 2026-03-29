@@ -10,22 +10,22 @@ export default function CountingTest() {
 
   const generateQuestion = () => {
     if (level > 10) {
-      localStorage.setItem('countingScore', score.toString());
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('countingScore', score.toString());
+      }
       setGameState('result');
       return;
     }
 
     const start = Math.floor(Math.random() * 20);
-    const step = level > 5 ? 2 : 1; // زيادة الصعوبة بعد المستوى 5
+    const step = level > 5 ? 2 : 1;
     const seq = [start, start + step, start + step * 2, start + step * 3];
     const missingIdx = Math.floor(Math.random() * 4);
     const answer = seq[missingIdx];
-    const displaySeq = [...seq];
+    const displaySeq: (number | string)[] = [...seq];
     displaySeq[missingIdx] = '?';
 
-    // توليد خيارات
     const options = [answer, answer + 1, answer - 1, answer + step + 1].sort(() => 0.5 - Math.random());
-    
     setQuestion({ seq: displaySeq, answer, options });
     setGameState('playing');
   };
@@ -42,32 +42,24 @@ export default function CountingTest() {
         {gameState === 'start' && (
           <div>
             <h1 className="text-4xl font-black mb-6 text-yellow-400">تحدي الرقم المفقود 🔍</h1>
-            <p className="text-xl text-slate-400 mb-8 font-light">هل تستطيع معرفة الرقم الذي هرب من السلسلة؟</p>
-            <button onClick={generateQuestion} className="bg-yellow-600 px-12 py-4 rounded-2xl font-bold text-xl">بدء السباق! 🏃‍♂️</button>
+            <button onClick={generateQuestion} className="bg-yellow-600 px-12 py-4 rounded-2xl font-bold">بدء السباق! 🏃‍♂️</button>
           </div>
         )}
-
         {gameState === 'playing' && (
-          <div className="animate-in fade-in">
-            <div className="mb-10 text-slate-500 font-bold">المستوى {level} / 10</div>
+          <div>
+            <div className="mb-10 text-slate-500">المستوى {level} / 10</div>
             <div className="flex justify-center gap-4 mb-12">
               {question.seq.map((num, i) => (
-                <div key={i} className={`w-20 h-20 flex items-center justify-center rounded-2xl text-4xl font-black shadow-lg border-2 
-                  ${num === '?' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 animate-bounce' : 'bg-slate-800 border-slate-700'}`}>
-                  {num}
-                </div>
+                <div key={i} className={`w-20 h-20 flex items-center justify-center rounded-2xl text-4xl font-black border-2 ${num === '?' ? 'border-yellow-500 text-yellow-400' : 'border-slate-700 bg-slate-800'}`}>{num}</div>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-4">
               {question.options.map((opt, i) => (
-                <button key={i} onClick={() => handleAnswer(opt)} className="bg-slate-800 hover:bg-yellow-600 p-6 rounded-2xl text-3xl font-bold transition-all active:scale-95">
-                  {opt}
-                </button>
+                <button key={i} onClick={() => handleAnswer(opt)} className="bg-slate-800 hover:bg-yellow-600 p-6 rounded-2xl text-3xl font-bold transition-all">{opt}</button>
               ))}
             </div>
           </div>
         )}
-
         {gameState === 'result' && (
           <div className="animate-in zoom-in">
             <h2 className="text-5xl font-black text-green-400 mb-8">بطل الأرقام!</h2>
