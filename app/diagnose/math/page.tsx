@@ -1,59 +1,84 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 
-const SHAPES_LIST = ['🔴', '🔵', '🟡', '🟢', '⭐', '💎'];
-
-export default function PatternsTest() {
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'result'>('start');
-  const [round, setRound] = useState(1);
-  const [score, setScore] = useState(0);
-  const [pattern, setPattern] = useState({ sequence: [] as string[], answer: '', options: [] as string[] });
-
-  const generatePattern = () => {
-    if (round > 8) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('patternsScore', score.toString());
-      }
-      setGameState('result');
-      return;
-    }
-    const s1 = SHAPES_LIST[Math.floor(Math.random() * 3)];
-    const s2 = SHAPES_LIST[Math.floor(Math.random() * 3) + 3];
-    const sequence = [s1, s2, s1];
-    const answer = s2;
-    const options = [s2, s1, SHAPES_LIST[1], SHAPES_LIST[4]].sort(() => 0.5 - Math.random());
-    setPattern({ sequence, answer, options });
-    setGameState('playing');
-  };
+export default function MathMenu() {
+  const tests = [
+    { 
+      id: 'comparison', 
+      title: 'مقارنة الكميات', 
+      icon: '⚖️', 
+      color: 'border-blue-500', 
+      desc: 'تحدي "الرادار البصري".. أي المجموعة أكبر؟' 
+    },
+    { 
+      id: 'counting', 
+      title: 'تحدي الرقم المفقود', 
+      icon: '🔢', 
+      color: 'border-yellow-500', 
+      desc: 'اكتشف الرقم الذي هرب من السلسلة الحسابية.' 
+    },
+    { 
+      id: 'patterns', 
+      title: 'تحدي الأنماط الذكي', 
+      icon: '🧩', 
+      color: 'border-purple-500', 
+      desc: 'أكمل اللوحة بالشكل المنطقي الصحيح.' 
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6" dir="rtl">
-      <div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-blue-500/20 shadow-2xl max-w-2xl w-full text-center">
-        {gameState === 'start' && (
-          <button onClick={generatePattern} className="bg-blue-600 px-16 py-5 rounded-2xl font-black text-xl">ابدأ تحدي الأنماط!</button>
-        )}
-        {gameState === 'playing' && (
-          <div>
-            <div className="text-slate-500 mb-8">اللغز {round} / 8</div>
-            <div className="flex justify-center gap-6 mb-16 bg-slate-950 p-8 rounded-[2rem] border border-slate-800">
-              {pattern.sequence.map((s, i) => <span key={i} className="text-7xl">{s}</span>)}
-              <div className="text-7xl w-24 h-24 bg-slate-800 rounded-2xl flex items-center justify-center border-2 border-dashed border-blue-500 animate-pulse">؟</div>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              {pattern.options.map((opt, i) => (
-                <button key={i} onClick={() => { if (opt === pattern.answer) setScore(s => s + 12.5); setRound(r => r + 1); generatePattern(); }} className="text-6xl p-6 bg-slate-800 hover:bg-blue-600 rounded-3xl transition">{opt}</button>
-              ))}
-            </div>
-          </div>
-        )}
-        {gameState === 'result' && (
-          <div className="animate-in zoom-in">
-             <h2 className="text-5xl font-black text-blue-400 mb-8">منطقي بامتياز!</h2>
-             <div className="text-8xl font-black mb-10">{Math.round(score)}</div>
-             <Link href="/diagnose/math" className="text-slate-500 underline">العودة للمختبر</Link>
-          </div>
-        )}
+    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-20 font-sans" dir="rtl">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* رأس الصفحة */}
+        <header className="text-center mb-16 animate-in fade-in duration-700">
+          <div className="text-7xl mb-6 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">🔢</div>
+          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 bg-clip-text text-transparent italic">
+            مختبر التشخيص الرياضي
+          </h1>
+          <p className="text-slate-500 mt-6 text-xl font-light">
+            اختر التحدي المطلوب لتقييم المهارات الحسابية والمنطقية
+          </p>
+        </header>
+
+        {/* شبكة الاختيارات */}
+        <div className="grid gap-6">
+          {tests.map((test) => (
+            <Link key={test.id} href={`/diagnose/math/${test.id}`}>
+              <div className={`bg-slate-900/60 backdrop-blur-md p-8 rounded-[2.5rem] border-2 ${test.color} hover:scale-[1.03] transition-all cursor-pointer shadow-2xl flex justify-between items-center group overflow-hidden relative`}>
+                
+                {/* تأثير خلفية عند الحوم (Hover) */}
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity bg-white`}></div>
+
+                <div className="text-right z-10">
+                  <h2 className="text-2xl md:text-3xl font-black flex items-center gap-4 text-white">
+                    <span className="bg-slate-800 p-3 rounded-2xl shadow-inner">{test.icon}</span> 
+                    {test.title}
+                  </h2>
+                  <p className="text-slate-400 mt-3 text-lg font-light pr-2">
+                    {test.desc}
+                  </p>
+                </div>
+
+                <div className="bg-slate-800 p-5 rounded-3xl group-hover:bg-yellow-600 group-hover:text-black transition-all shadow-lg z-10">
+                  <span className="text-2xl font-bold">ابدأ ←</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* زر العودة */}
+        <div className="mt-16 text-center">
+          <Link href="/diagnose" className="text-slate-600 hover:text-blue-400 transition-colors flex items-center justify-center gap-2 text-lg group">
+             <span className="group-hover:-translate-x-2 transition-transform">🔙</span>
+             العودة لبوابة التشخيص الرئيسية
+          </Link>
+        </div>
+
+        <footer className="mt-20 opacity-20 text-center text-sm italic">
+          منصة بصيرة - وحدة التقييم الرقمي v1.2
+        </footer>
       </div>
     </main>
   );
