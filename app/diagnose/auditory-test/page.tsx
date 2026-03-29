@@ -1,12 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 const DATA = [
   { word: 'تفاحة', emoji: '🍎' }, { word: 'صاروخ', emoji: '🚀' },
   { word: 'قطة', emoji: '🐱' }, { word: 'كرة', emoji: '⚽' },
   { word: 'أسد', emoji: '🦁' }, { word: 'سيارة', emoji: '🚗' },
-  { word: 'روبوت', emoji: '🤖' }, { word: 'ساعة', emoji: '⌚' },
 ];
 
 export default function AuditoryTest() {
@@ -15,24 +14,13 @@ export default function AuditoryTest() {
   const [score, setScore] = useState(0);
   const [options, setOptions] = useState<typeof DATA>([]);
 
-  // الدالة "الخارقة" لنطق الكلمات بدون تعليق
   const speak = (text: string) => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
-      // 1. إلغاء أي طابور قديم
-      window.speechSynthesis.cancel();
-      
-      // 2. تكتيك "فك التعليق" لمتصفح كروم
-      window.speechSynthesis.resume();
-
+      window.speechSynthesis.cancel(); 
+      window.speechSynthesis.resume(); 
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = 'ar-SA';
       msg.rate = 0.8;
-      
-      // إذا المتصفح علق، بنجبره يفك
-      msg.onend = () => {
-        window.speechSynthesis.cancel();
-      };
-
       window.speechSynthesis.speak(msg);
     }
   };
@@ -40,6 +28,7 @@ export default function AuditoryTest() {
   const startNextLevel = () => {
     if (currentLevel >= 5) {
       localStorage.setItem('auditoryScore', score.toString());
+      localStorage.setItem('auditoryDone', 'true');
       setGameState('result');
       return;
     }
@@ -47,8 +36,6 @@ export default function AuditoryTest() {
     const roundOptions = shuffled.slice(0, 4);
     setOptions(roundOptions);
     setGameState('playing');
-    
-    // تأخير بسيط عشان يلحق المتصفح يجهز الصوت
     setTimeout(() => speak(roundOptions[0].word), 700);
   };
 
@@ -59,49 +46,21 @@ export default function AuditoryTest() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 font-sans" dir="rtl">
-      <div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-green-500/20 shadow-2xl max-w-2xl w-full text-center">
-        {gameState === 'start' && (
-          <div className="animate-in zoom-in duration-500">
-            <div className="text-8xl mb-6">🔊</div>
-            <h1 className="text-4xl font-black mb-6 text-green-400">مختبر الصوت الذكي</h1>
-            <button 
-              onClick={() => {setScore(0); setCurrentLevel(0); startNextLevel();}} 
-              className="bg-green-600 hover:bg-green-500 px-16 py-5 rounded-2xl font-black text-2xl shadow-xl active:scale-95 transition-all"
-            >
-              ابدأ الآن 👂
-            </button>
-          </div>
-        )}
-
-        {gameState === 'playing' && (
-          <div className="animate-in fade-in">
-            <button 
-              onClick={() => speak(options[0].word)} 
-              className="mb-12 p-8 bg-slate-800 rounded-full hover:bg-slate-700 transition-all border-2 border-green-500/30 group shadow-lg active:scale-90"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-5xl group-hover:animate-pulse">🔊</span>
-                <span className="text-2xl font-bold">أعد الاستماع</span>
-              </div>
-            </button>
-            <div className="grid grid-cols-2 gap-6">
-              {[...options].sort(() => 0.5 - Math.random()).map((opt, i) => (
-                <button key={i} onClick={() => handleChoice(opt.emoji)} className="text-[6rem] p-8 bg-slate-950 rounded-[2.5rem] hover:bg-green-600 transition-all active:scale-90 border-2 border-slate-800 shadow-xl">
-                  {opt.emoji}
-                </button>
+    <main className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center" dir="rtl">
+      <div className="bg-slate-800 p-10 rounded-[3rem] border-4 border-green-500/20 shadow-2xl max-w-xl w-full">
+        {gameState === 'playing' ? (
+          <div>
+            <button onClick={() => speak(options[0].word)} className="mb-12 p-8 bg-slate-700 rounded-full text-3xl">🔊 اسمع الكلمة</button>
+            <div className="grid grid-cols-2 gap-4">
+              {options.map((opt, i) => (
+                <button key={i} onClick={() => handleChoice(opt.emoji)} className="text-7xl p-6 bg-slate-950 rounded-2xl hover:bg-green-600">{opt.emoji}</button>
               ))}
             </div>
           </div>
-        )}
-
-        {gameState === 'result' && (
-          <div className="animate-in zoom-in">
-            <h2 className="text-5xl font-black text-green-400 mb-8">أحسنت! 🏆</h2>
-            <div className="text-8xl font-black text-white mb-10">{score}</div>
-            <Link href="/diagnose/results">
-              <button className="bg-blue-600 hover:bg-blue-500 px-10 py-5 rounded-2xl font-black text-xl shadow-lg animate-bounce">عرض التقرير والتشخيص 📑</button>
-            </Link>
+        ) : (
+          <div>
+            <h2 className="text-4xl mb-8">{gameState === 'start' ? 'اختبار السمع' : 'أحسنت!'}</h2>
+            <button onClick={() => {setScore(0); setCurrentLevel(0); startNextLevel();}} className="bg-green-600 px-10 py-4 rounded-xl font-bold">ابدأ 👂</button>
           </div>
         )}
       </div>
