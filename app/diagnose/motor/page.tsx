@@ -1,39 +1,40 @@
+// كود موحد لكل القوائم الفرعية عشان التناسق
 'use client';
 import Link from 'next/link';
 
-export default function MotorMenu() {
-  const tests = [
-    { id: 'precision', title: 'دقة التتبع الحركي', icon: '✍️', color: 'border-rose-500', desc: 'قياس التآزر بين العين واليد (متاهة بورتيوس).' },
-    { id: 'reaction', title: 'سرعة الاستجابة الحركية', icon: '⚡', color: 'border-orange-500', desc: 'اختبار سرعة رد الفعل العصبية (Psychomotor).' },
-    { id: 'tapping', title: 'ثبات النقر المتكرر', icon: '👆', color: 'border-amber-500', desc: 'قياس التعب العضلي والتحكم الدقيق (Tapping Test).' },
-  ];
-
+export default function ModernSubMenu({ title, icon, tests, backPath }: any) {
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-20 font-sans" dir="rtl">
-      <div className="max-w-5xl mx-auto">
-        <header className="text-center mb-16 animate-in fade-in">
-          <div className="text-7xl mb-6">✍️</div>
-          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-rose-500 to-orange-400 bg-clip-text text-transparent italic">
-            مختبر المهارات الحركية
-          </h1>
-          <p className="text-slate-500 mt-6 text-xl">تحليل الكفاءة العصبية والتحكم العضلي الدقيق</p>
-        </header>
+    <main className="min-h-screen bg-[#050505] text-white p-6 md:p-20 font-sans overflow-hidden" dir="rtl">
+      {/* لمسة فنية خلفية */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-950/20 rounded-full blur-[150px]"></div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {tests.map((test) => (
-            <Link key={test.id} href={`/diagnose/motor/${test.id}`}>
-              <div className={`bg-slate-900/60 p-8 rounded-[2.5rem] border-2 ${test.color} hover:scale-105 transition-all cursor-pointer shadow-2xl group flex flex-col items-center text-center`}>
-                <span className="text-6xl mb-6">{test.icon}</span>
-                <h2 className="text-2xl font-black mb-3">{test.title}</h2>
-                <p className="text-slate-400 font-light text-sm">{test.desc}</p>
-                <div className="mt-8 bg-slate-800 w-12 h-12 rounded-full flex items-center justify-center group-hover:bg-rose-600 transition">◀</div>
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="mb-20">
+          <Link href={backPath} className="text-slate-500 hover:text-white transition-colors flex items-center gap-2 mb-8">
+            <span>▶</span> العودة للرئيسية
+          </Link>
+          <div className="flex items-center gap-6">
+            <span className="text-8xl p-6 bg-white/5 rounded-3xl border border-white/10">{icon}</span>
+            <div>
+              <h1 className="text-6xl font-black italic">{title}</h1>
+              <p className="text-slate-500 mt-2 text-xl">اختر نوع الفحص المطلوب للبدء بالتحليل المتقدم.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {tests.map((test: any) => (
+            <Link key={test.id} href={`${backPath}/${test.id}`} className="group">
+              <div className="bg-slate-900/30 backdrop-blur-2xl border border-white/10 p-10 rounded-[3rem] h-full transition-all hover:bg-white hover:text-black duration-500 shadow-2xl">
+                <span className="text-6xl mb-8 block group-hover:scale-110 transition-transform">{test.icon}</span>
+                <h2 className="text-2xl font-black mb-4">{test.title}</h2>
+                <p className="text-slate-500 group-hover:text-slate-800 text-sm leading-relaxed">{test.desc}</p>
+                <div className="mt-10 pt-6 border-t border-white/5 group-hover:border-black/10 flex justify-end">
+                   <span className="text-2xl opacity-0 group-hover:opacity-100 transition-opacity">◀</span>
+                </div>
               </div>
             </Link>
           ))}
-        </div>
-
-        <div className="mt-20 text-center">
-          <Link href="/diagnose" className="text-slate-600 hover:text-white underline transition">العودة للبوابة الرئيسية</Link>
         </div>
       </div>
     </main>
