@@ -1,61 +1,44 @@
 'use client';
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const TARGET = '🤖'; 
-const DISTRACTORS = ['💣', '📦', '🎈', '☁️', '🧱', '🚗']; 
-
-export default function AttentionTest() {
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'result'>('start');
-  const [currentEmoji, setCurrentEmoji] = useState('');
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(25);
-
-  const nextEmoji = () => {
-    const isTarget = Math.random() > 0.65;
-    setCurrentEmoji(isTarget ? TARGET : DISTRACTORS[Math.floor(Math.random() * DISTRACTORS.length)]);
-  };
-
-  const handlePress = () => {
-    if (gameState !== 'playing') return;
-    if (currentEmoji === TARGET) setScore(s => s + 10);
-    else setScore(s => Math.max(0, s - 5));
-    nextEmoji();
-  };
-
-  useEffect(() => {
-    if (gameState === 'playing' && timeLeft > 0) {
-      const t = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-      const e = setInterval(nextEmoji, 1000);
-      return () => { clearInterval(t); clearInterval(e); };
-    } else if (timeLeft === 0 && gameState === 'playing') {
-      localStorage.setItem('attentionScore', score.toString());
-      localStorage.setItem('attentionDone', 'true');
-      setGameState('result');
-    }
-  }, [gameState, timeLeft]);
+export default function AttentionMenu() {
+  const tests = [
+    { id: 'selective', title: 'الانتباه الانتقائي', icon: '🎯', color: 'border-red-500', desc: 'التركيز على هدف محدد وتجاهل المشتتات.' },
+    { id: 'sustained', title: 'الانتباه المستمر', icon: '⏳', color: 'border-orange-500', desc: 'قياس القدرة على التركيز لفترات طويلة.' },
+    { id: 'divided', title: 'الانتباه المتشعب', icon: '🌪️', color: 'border-yellow-500', desc: 'القيام بمهمتين في وقت واحد بدقة.' },
+    { id: 'impulsivity', title: 'التحكم بالاندفاع', icon: '🛑', color: 'border-pink-500', desc: 'التوقف عن الاستجابة في الوقت المناسب.' },
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center" dir="rtl">
-      <div className="bg-slate-800 p-10 rounded-[3rem] border-4 border-purple-500/20 shadow-2xl max-w-xl w-full">
-        {gameState === 'playing' ? (
-          <div>
-            <div className="flex justify-between mb-8 text-2xl font-bold">
-              <span className="text-yellow-400">{timeLeft}ث</span>
-              <span className="text-green-400">سكور: {score}</span>
-            </div>
-            <button onClick={handlePress} className="text-[10rem] active:scale-75 transition-transform">{currentEmoji}</button>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-4xl font-bold mb-8">{gameState === 'start' ? 'تحدي الانتباه' : 'انتهى الوقت!'}</h2>
-            {gameState === 'start' ? (
-               <button onClick={() => {setScore(0); setTimeLeft(25); setGameState('playing'); nextEmoji();}} className="bg-purple-600 px-12 py-4 rounded-xl font-bold">ابدأ ⚡</button>
-            ) : (
-               <Link href="/diagnose" className="bg-purple-600 px-10 py-4 rounded-xl font-bold">العودة للبوابة</Link>
-            )}
-          </div>
-        )}
+    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-20 font-sans" dir="rtl">
+      <div className="max-w-5xl mx-auto">
+        <header className="text-center mb-16 animate-in fade-in">
+          <div className="text-7xl mb-6">🎯</div>
+          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent italic">
+            مختبر تشخيص الانتباه
+          </h1>
+          <p className="text-slate-500 mt-6 text-xl">تحليل سرعة الاستجابة والقدرة على التركيز الذهني</p>
+        </header>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {tests.map((test) => (
+            <Link key={test.id} href={`/diagnose/attention/${test.id}`}>
+              <div className={`bg-slate-900/60 backdrop-blur-md p-8 rounded-[2.5rem] border-2 ${test.color} hover:scale-[1.03] transition-all cursor-pointer shadow-2xl group`}>
+                <div className="flex items-center gap-6">
+                  <span className="text-6xl bg-slate-800 p-4 rounded-3xl group-hover:rotate-12 transition-transform">{test.icon}</span>
+                  <div className="text-right">
+                    <h2 className="text-2xl font-black text-white">{test.title}</h2>
+                    <p className="text-slate-400 mt-2 font-light">{test.desc}</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <Link href="/diagnose" className="text-slate-600 hover:text-white underline transition">العودة للبوابة الرئيسية</Link>
+        </div>
       </div>
     </main>
   );
