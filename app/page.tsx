@@ -1,97 +1,113 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function Home() {
+export default function BasiraModernHome() {
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  // تنسيقات الستايل "السيادي"
-  const goldText = "bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 bg-clip-text text-transparent font-black";
-  const glassPanel = "bg-[#0f172a]/80 backdrop-blur-xl border border-white/10 shadow-2xl p-12 rounded-[3rem] transition-all hover:border-blue-500/30";
-
-  const handleStartLab = () => {
-    router.push('/diagnose');
-  };
+  const sections = [
+    { 
+      id: 'who', 
+      title: 'مَن هي بَصيرة؟', 
+      icon: '🛡️', 
+      content: 'نحن "المركز الرقمي السيادي الشامل". منظومة تقنية متطورة صُممت لسد الفجوة بين التشخيص الميداني والتدخل الرقمي، نهدف لتمكين الأطفال (أكاديمياً، نمائياً، وموهبياً) عبر تكنولوجيا رصينة ومحمية بالكامل.'
+    },
+    { 
+      id: 'what', 
+      title: 'ماذا نفعل للأبطال؟', 
+      icon: '⚡', 
+      content: 'نقدم تشخيصاً مزدوجاً فورياً، وجلسات علاجية تفاعلية مع الأفاتار "بصير"، بالإضافة إلى إصدار الجواز التعليمي الرقمي الموحد الذي يرافق الطفل في مسيرته الدراسية.'
+    },
+    { 
+      id: 'why', 
+      title: 'لماذا يختارنا الأهل؟', 
+      icon: '💎', 
+      content: 'دقة تصل لـ 70% رقمياً، استخدام مستشعرات حيوية لتتبع استجابة الطفل اللحظية، وأمان سيادي يضمن تشفير كافة بيانات السجل التعليمي والنمائي بخصوصية تامة.'
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-blue-500/30" dir="rtl">
+    <main className="min-h-screen bg-[#0a0f1a] text-slate-200 font-sans selection:bg-cyan-500/30 overflow-hidden relative" dir="rtl">
       
-      {/* 1. قسم الترحيب الرئيسي (Hero Section) */}
-      <section className="relative h-[90vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-        {/* خلفية سينمائية */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-        
-        <h1 className="text-6xl md:text-[7.5rem] font-black leading-[1.1] mb-8 relative animate-in fade-in slide-in-from-top-10 duration-1000">
-          بَصيرة: السيادة في <br/> 
-          <span className={goldText}>علاج صعوبات التعلم</span>
-        </h1>
-        
-        <p className="text-xl md:text-3xl text-slate-400 max-w-4xl leading-relaxed italic mb-14 font-light">
-          المنظومة الرقمية الأولى التي تجمع بين الحقيقة السريرية والذكاء الاصطناعي الوجداني لتأمين مستقبل أبطالنا.
-        </p>
+      {/* خلفية ناعمة مريحة للعين */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-900/30 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[100px]"></div>
+      </div>
 
-        <button 
-          onClick={handleStartLab}
-          className="group relative px-20 py-8 bg-blue-600 text-3xl font-black rounded-2xl hover:bg-blue-500 shadow-[0_0_50px_rgba(37,99,235,0.4)] border-b-[10px] border-blue-900 transition-all active:scale-95 active:border-b-0 overflow-hidden"
-        >
-          <span className="relative z-10">دخول المنظومة 🛡️</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-        </button>
-      </section>
-
-      {/* 2. قسم "من نحن ولماذا نحن" (Identity & Why Us) */}
-      <section className="py-24 px-10 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
         
-        {/* من نحن */}
-        <div className={glassPanel}>
-          <h2 className="text-4xl font-black mb-6 text-blue-500 italic underline decoration-2 underline-offset-8">من هي بَصيرة؟</h2>
-          <p className="text-xl text-slate-300 leading-relaxed font-bold">
-            نحن "المركز الرقمي السيادي الشامل". منظومة تقنية متطورة صُممت لسد الفجوة بين التشخيص الميداني والتدخل الرقمي، نهدف لتمكين الأطفال (أكاديمياً، نمائياً، وموهبياً) عبر تكنولوجيا رصينة.
+        {/* الهيدر: أصغر وأرقى */}
+        <header className="text-center mb-16 animate-in fade-in slide-in-from-top-5 duration-700">
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
+            منظومة <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent italic">بَصيرة</span>
+          </h1>
+          <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            السيادة في تشخيص وعلاج صعوبات التعلم بأدوات القرن الحادي والعشرين.
           </p>
-        </div>
+        </header>
 
-        {/* ماذا نفعل */}
-        <div className={glassPanel}>
-          <h2 className="text-4xl font-black mb-6 text-blue-500 italic underline decoration-2 underline-offset-8">ماذا نفعل للأبطال؟</h2>
-          <ul className="space-y-4 text-xl font-bold text-slate-300">
-            <li className="flex items-center gap-4 hover:translate-x-[-5px] transition-transform">
-              <span className="text-blue-500 text-2xl">✓</span> تشخيص مزدوج (داخلي/خارجي) فوري.
-            </li>
-            <li className="flex items-center gap-4 hover:translate-x-[-5px] transition-transform">
-              <span className="text-blue-500 text-2xl">✓</span> جلسات علاجية تفاعلية مع الأفاتار "بصير".
-            </li>
-            <li className="flex items-center gap-4 hover:translate-x-[-5px] transition-transform">
-              <span className="text-blue-500 text-2xl">✓</span> إصدار الجواز التعليمي الرقمي الموحد.
-            </li>
-          </ul>
-        </div>
-
-      </section>
-
-      {/* 3. قسم القيم الجوهرية (Core Values) */}
-      <section className="py-32 px-10 bg-[#03081a]/50 relative">
-        <h2 className="text-5xl font-black text-center mb-20 italic">لماذا يختار الأهل بَصيرة؟</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {[
-            { t: "دقة 70% رقمياً", d: "خوارزميات تعطي صورة واضحة وموثوقة عن حالة الطفل قبل التوجه للمراكز." },
-            { t: "المستشعرات الحيوية", d: "تتبع العين والنبض الحيوي لتحليل استجابة الطفل اللحظية." },
-            { t: "الأمان السيادي", d: "بيانات مشفرة بالكامل تضمن خصوصية السجل التعليمي للطفل." }
-          ].map((item, i) => (
-            <div key={i} className="p-12 border border-white/5 bg-slate-900/40 rounded-[2.5rem] hover:border-blue-500/50 hover:bg-slate-900/60 transition-all group">
-              <h3 className="text-2xl font-black text-blue-400 mb-4 italic group-hover:scale-105 transition-transform">{item.t}</h3>
-              <p className="text-lg text-slate-400 font-bold leading-relaxed">{item.d}</p>
-            </div>
+        {/* نظام الأزرار التفاعلية (The Interactive Hub) */}
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(activeSection === s.id ? null : s.id)}
+              className={`p-8 rounded-[2.5rem] border-2 transition-all duration-500 flex flex-col items-center gap-4 group
+                ${activeSection === s.id 
+                  ? 'bg-cyan-600/20 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.2)]' 
+                  : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}`}
+            >
+              <span className={`text-5xl transition-transform duration-500 ${activeSection === s.id ? 'scale-110 rotate-12' : 'group-hover:scale-110'}`}>
+                {s.icon}
+              </span>
+              <span className="text-2xl font-black italic">{s.title}</span>
+              <span className={`text-sm font-mono ${activeSection === s.id ? 'text-cyan-400' : 'text-slate-600'}`}>
+                {activeSection === s.id ? 'إغلاق التفاصيل ▲' : 'عرض الشرح ▼'}
+              </span>
+            </button>
           ))}
         </div>
-      </section>
 
-      {/* Footer الصغير الختامي */}
-      <footer className="py-16 border-t border-white/5 text-center">
-        <div className="mb-4 text-slate-500 font-mono tracking-widest text-sm">SYSTEM_LOG // BASIRA_GLOBAL_V4.0</div>
-        <p className="text-slate-600 italic font-bold">
-          منظومة بَصيرة العالمية © 2026 - السيادة في التعليم الخاص.
-        </p>
+        {/* منطقة عرض المحتوى الديناميكية (Dynamic Content Area) */}
+        <div className="min-h-[200px] mb-20 flex justify-center">
+          {activeSection ? (
+            <div className="w-full max-w-4xl bg-slate-900/60 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] animate-in zoom-in-95 fade-in duration-300 shadow-2xl">
+              <h3 className="text-3xl font-black text-cyan-400 mb-6 italic flex items-center gap-4">
+                {sections.find(s => s.id === activeSection)?.icon}
+                {sections.find(s => s.id === activeSection)?.title}
+              </h3>
+              <p className="text-xl md:text-2xl text-slate-300 leading-relaxed font-light italic">
+                {sections.find(s => s.id === activeSection)?.content}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center text-slate-600 italic border-2 border-dashed border-slate-800 rounded-[3rem] px-20">
+              اضغط على أحد الخيارات أعلاه لاستكشاف تفاصيل المنظومة...
+            </div>
+          )}
+        </div>
+
+        {/* زر الدخول الرئيسي - مريح وبارز */}
+        <div className="text-center">
+          <button 
+            onClick={() => router.push('/diagnose')}
+            className="group relative px-16 py-6 bg-cyan-600 text-2xl font-black rounded-3xl hover:bg-cyan-500 transition-all shadow-[0_0_40px_rgba(8,145,178,0.3)] active:scale-95"
+          >
+            <span className="flex items-center gap-4">
+               دخول المنظومة السيادية 🛡️
+               <span className="text-sm opacity-50 group-hover:translate-x-[-5px] transition-transform font-mono">GO_CORE_V5</span>
+            </span>
+          </button>
+        </div>
+
+      </div>
+
+      {/* فوتر هادئ */}
+      <footer className="mt-20 py-10 border-t border-white/5 text-center text-slate-700 text-sm font-mono">
+        BASIRA_SYSTEM_2026 // SOVEREIGN_EDITION
       </footer>
-    </div>
+    </main>
   );
 }
