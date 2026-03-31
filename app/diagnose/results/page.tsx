@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-export default function ResultsPage() {
+export default function SovereignGridResults() {
   const [name, setName] = useState('أيها البطل');
 
   useEffect(() => {
@@ -10,70 +11,83 @@ export default function ResultsPage() {
     if (savedName) setName(savedName);
   }, []);
 
+  // بيانات الـ 10 مختبرات مع نسب افتراضية (ممكن تعدلها لاحقاً)
+  const results = [
+    { id: 'math', title: 'الرياضيات', icon: '🔢', score: 85, color: 'border-blue-500/50' },
+    { id: 'visual', title: 'البصر', icon: '👁️', score: 70, color: 'border-purple-500/50' },
+    { id: 'attention', title: 'الانتباه', icon: '🎯', score: 65, color: 'border-red-500/50' },
+    { id: 'memory', title: 'الذاكرة', icon: '🧠', score: 92, color: 'border-emerald-500/50' },
+    { id: 'motor', title: 'الحركة', icon: '✍️', score: 88, color: 'border-rose-500/50' },
+    { id: 'language', title: 'اللغة', icon: '📖', score: 75, color: 'border-indigo-500/50' },
+    { id: 'auditory', title: 'السمع', icon: '👂', score: 80, color: 'border-cyan-500/50' },
+    { id: 'executive', title: 'الوظائف', icon: '⚙️', score: 60, color: 'border-fuchsia-500/50' },
+    { id: 'cognitive', title: 'الإدراك', icon: '💡', score: 82, color: 'border-amber-500/50' },
+    { id: 'writing', title: 'الكتابة', icon: '🖋️', score: 95, color: 'border-teal-500/50' },
+  ];
+
   return (
-    <main className="min-h-screen bg-[#020617] text-white p-6 md:p-20 font-sans relative overflow-hidden" dir="rtl">
+    <main className="min-h-screen bg-[#020617] text-white p-6 md:p-16 font-sans relative" dir="rtl">
       
       {/* توهج خلفي ناعم */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
         
         <header className="mb-16">
-          <Link href="/diagnose" className="text-slate-500 hover:text-white transition-colors flex items-center gap-2 mb-8 font-mono">
-            <span>▶</span> BACK_TO_HUB
+          <Link href="/diagnose" className="text-slate-500 hover:text-white transition-colors mb-8 inline-block font-mono">
+             ◀ BACK_TO_HUB
           </Link>
-          <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-tight">
-            التقرير <span className="bg-gradient-to-l from-blue-400 to-cyan-400 bg-clip-text text-transparent">النهائي</span>
+          <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter">
+            تقرير <span className="bg-gradient-to-l from-blue-400 to-cyan-400 bg-clip-text text-transparent">بَصيرة</span> النهائي
           </h1>
           <p className="text-slate-400 mt-4 text-2xl font-light italic">
-            نتائج تحليل القدرات للبطل: <span className="text-white font-bold">{name}</span>
+            تحليل القدرات السيادي للبطل: <span className="text-white font-bold">{name}</span>
           </p>
         </header>
 
-        {/* شبكة البيانات - Glassmorphism */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-12 rounded-[3rem] shadow-2xl">
-            <h2 className="text-3xl font-black mb-10 italic border-b border-white/5 pb-4">المؤشرات العصبية</h2>
-            <div className="space-y-8">
-              <div className="flex justify-between items-center">
-                <span className="text-xl">سرعة الاستجابة</span>
-                <span className="text-cyan-400 font-black text-2xl">85%</span>
+        {/* شبكة المربعات (الخانات) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
+          {results.map((item) => (
+            <motion.div 
+              key={item.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className={`bg-slate-900/40 backdrop-blur-xl border-2 ${item.color} p-8 rounded-[2.5rem] flex flex-col items-center justify-center text-center group hover:bg-white hover:text-black transition-all duration-500 shadow-2xl`}
+            >
+              <span className="text-5xl mb-4 group-hover:scale-110 transition-transform">{item.icon}</span>
+              <h3 className="text-xl font-black mb-2 italic">{item.title}</h3>
+              
+              {/* النسبة المئوية */}
+              <div className="text-3xl font-black font-mono bg-white/5 group-hover:bg-black/5 px-4 py-2 rounded-xl mt-2">
+                {item.score}%
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xl">التركيز البصري</span>
-                <span className="text-purple-400 font-black text-2xl">70%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xl">الذاكرة العاملة</span>
-                <span className="text-blue-400 font-black text-2xl">92%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-12 rounded-[4rem] shadow-2xl flex flex-col justify-center">
-            <div className="text-7xl mb-6 opacity-10 text-center font-black italic">TOP_SCORE</div>
-            <p className="text-2xl text-slate-300 leading-relaxed italic text-center font-light">
-              يظهر التحليل الرقمي تفوقاً في المهارات المنطقية والحركية. نوصي بالاستمرار في المسار التدريبي لتعزيز الانتباه البصري.
-            </p>
-          </div>
-
+            </motion.div>
+          ))}
         </div>
 
-        {/* أزرار الإجراءات */}
+        {/* ملخص الحالة */}
+        <div className="bg-slate-900/60 border border-white/10 p-12 rounded-[4rem] text-center mb-16">
+          <h2 className="text-3xl font-black mb-6 italic text-cyan-400">التشخيص النهائي</h2>
+          <p className="text-2xl text-slate-300 leading-relaxed italic max-w-4xl mx-auto">
+            أظهر البطل <span className="text-white font-bold">{name}</span> استجابة استثنائية في مهارات الذاكرة والكتابة، مع حاجة طفيفة لتعزيز الانتباه البصري والوظائف التنفيذية عبر التدريب المكثف.
+          </p>
+        </div>
+
+        {/* أزرار التحكم */}
         <div className="flex flex-wrap gap-6 justify-center">
-          <button className="px-12 py-6 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all">
-            تصدير التقرير PDF 📥
+          <button className="px-16 py-7 bg-white text-black font-black text-2xl rounded-3xl hover:scale-105 transition-all shadow-xl">
+            تحميل التقرير PDF 📄
           </button>
-          <button className="px-12 py-6 bg-slate-800 text-white font-black text-xl rounded-2xl border border-white/10">
+          <button className="px-16 py-7 bg-slate-800 text-white font-black text-2xl rounded-3xl border border-white/10">
             مشاركة النتائج 🛡️
           </button>
         </div>
 
       </div>
 
-      <footer className="mt-20 text-center text-slate-700 font-mono text-xs uppercase tracking-[0.5em]">
-        SOVEREIGN_SYSTEM_REPORT // 2026
+      <footer className="mt-20 py-12 border-t border-white/5 text-center text-slate-700 font-mono text-sm tracking-widest uppercase">
+        Sovereign_System_V6 // 2026
       </footer>
     </main>
   );
