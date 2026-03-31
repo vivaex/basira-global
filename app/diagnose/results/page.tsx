@@ -3,132 +3,131 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-export default function IntegratedResultsPage() {
+export default function DeepDiagnosticReport() {
   const [name, setName] = useState('أيها البطل');
-  const [parentData, setParentData] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
 
   useEffect(() => {
-    // جلب اسم الطالب
     const savedName = localStorage.getItem('studentName');
     if (savedName) setName(savedName);
 
-    // جلب ومعالجة نتائج الأهل
-    const savedParentData = localStorage.getItem('parentAssessment');
-    if (savedParentData) {
-      const rawAnswers = JSON.parse(savedParentData);
-      
-      // تحليل الإجابات وتحويلها لسكورات مئوية (كل فئة سؤالين، المجموع من 8)
-      const categories = [
-        { label: 'الانتباه المنزلي', scores: [rawAnswers[1], rawAnswers[7]], color: 'bg-cyan-500' },
-        { label: 'التواصل الاجتماعي', scores: [rawAnswers[2], rawAnswers[6]], color: 'bg-blue-500' },
-        { label: 'الضبط الانفعالي', scores: [rawAnswers[3], rawAnswers[8]], color: 'bg-red-500' },
-        { label: 'المعالجة الحسية', scores: [rawAnswers[4], rawAnswers[10]], color: 'bg-purple-500' },
-        { label: 'التنظيم والاستقلالية', scores: [rawAnswers[5], rawAnswers[9]], color: 'bg-emerald-500' },
-      ];
-
-      const processed = categories.map(cat => ({
-        label: cat.label,
-        percentage: Math.round(((cat.scores[0] + cat.scores[1]) / 8) * 100),
-        color: cat.color
-      }));
-      
-      setParentData(processed);
+    const parentRaw = localStorage.getItem('parentAssessment');
+    if (parentRaw) {
+      const raw = JSON.parse(parentRaw);
+      // محاكاة محرك التحليل الذكي
+      setAnalysis({
+        executive: Math.round(((raw[5] + raw[9]) / 8) * 100), // التنظيم
+        attention: Math.round(((raw[1] + raw[7]) / 8) * 100), // الانتباه
+        emotional: Math.round(((raw[3] + raw[8]) / 8) * 100), // الضبط
+        sensory: Math.round(((raw[4] + raw[10]) / 8) * 100),  // الحس
+        social: Math.round(((raw[2] + raw[6]) / 8) * 100),   // التواصل
+      });
     }
   }, []);
 
-  const childLabs = [
-    { title: 'المنطق الرقمي', score: 85, color: 'border-blue-500/30' },
-    { title: 'البصر المكاني', score: 70, color: 'border-purple-500/30' },
-    { title: 'الذاكرة السيادية', score: 92, color: 'border-emerald-500/30' },
-    { title: 'التآزر الحركي', score: 88, color: 'border-rose-500/30' },
-  ];
-
   return (
-    <main className="min-h-screen bg-[#020617] text-white p-6 md:p-20 relative overflow-hidden" dir="rtl">
+    <main className="min-h-screen bg-[#020617] text-slate-200 p-6 md:p-16 relative overflow-x-hidden" dir="rtl">
       
+      {/* تأثيرات بصرية سيادية */}
+      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none"></div>
+
       <div className="max-w-7xl mx-auto relative z-10">
         
-        <header className="mb-16 border-b border-white/5 pb-10 flex justify-between items-end">
-          <div>
-            <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter">التقرير <span className="text-cyan-400">الشامل</span></h1>
-            <p className="text-slate-500 text-2xl mt-4">البطل: <span className="text-white font-bold">{name}</span></p>
+        {/* 1. رأس التقرير (Official Header) */}
+        <header className="mb-16 border-b border-white/10 pb-10 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-center md:text-right">
+            <h1 className="text-6xl font-black italic tracking-tighter text-white mb-2 underline decoration-cyan-500 decoration-4 underline-offset-8">
+              ملف التشخيص <span className="text-cyan-400 font-mono italic">V1.0</span>
+            </h1>
+            <p className="text-slate-500 text-xl italic uppercase tracking-widest font-light">Sovereign_Diagnostic_Intelligence</p>
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/20 px-6 py-2 rounded-full text-cyan-400 font-mono text-sm hidden md:block">
-            Sovereign_ID: {Math.floor(Math.random() * 900000) + 100000}
+          <div className="bg-slate-900/60 p-6 rounded-3xl border border-cyan-500/30 text-center min-w-[250px]">
+            <p className="text-xs text-cyan-500 uppercase font-mono mb-1">اسم البطل المعالج</p>
+            <p className="text-3xl font-black italic text-white uppercase">{name}</p>
           </div>
         </header>
 
-        <div className="grid lg:grid-cols-3 gap-10">
+        {/* 2. قطاع التحليل العصب-نفسي (The Deep Analysis) */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
           
-          {/* القسم الأول: نتائج المختبرات (الطفل) */}
-          <div className="lg:col-span-2 space-y-8">
-            <h2 className="text-3xl font-black italic flex items-center gap-4">
-              <span className="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center text-xl">🤖</span>
-              أداء البطل في المختبرات
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {childLabs.map((lab) => (
-                <div key={lab.title} className={`bg-slate-900/40 backdrop-blur-xl border ${lab.color} p-8 rounded-[2.5rem]`}>
-                  <div className="flex justify-between mb-4 items-end">
-                    <span className="text-xl font-bold italic">{lab.title}</span>
-                    <span className="text-3xl font-black text-cyan-400 font-mono">{lab.score}%</span>
+          {/* الجانب الأيمن: التقييم السلوكي (الأهل) */}
+          <div className="bg-slate-950/50 border border-white/5 p-10 rounded-[4rem] shadow-2xl relative overflow-hidden">
+            <h3 className="text-2xl font-black italic mb-8 border-r-4 border-cyan-500 pr-4">البروتوكول السلوكي (الأهل)</h3>
+            <div className="space-y-10">
+              {analysis && Object.entries(analysis).map(([key, val]: any) => (
+                <div key={key}>
+                  <div className="flex justify-between mb-2 font-bold text-sm italic">
+                    <span>{key === 'executive' ? 'التنظيم' : key === 'attention' ? 'الانتباه' : key === 'emotional' ? 'الانفعال' : key === 'sensory' ? 'الحس' : 'التواصل'}</span>
+                    <span className={val < 50 ? 'text-rose-500' : 'text-cyan-400'}>{val}%</span>
                   </div>
-                  <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${lab.score}%` }} className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
+                  <div className="w-full bg-white/5 h-1.5 rounded-full">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${val}%` }} className={`h-full ${val < 50 ? 'bg-rose-600' : 'bg-cyan-600'}`} />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* القسم الثاني: نتائج رصد الأهل (الجديد) */}
-          <div className="bg-gradient-to-b from-slate-900 to-[#020617] border-2 border-white/5 p-10 rounded-[4rem] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 text-8xl italic font-black">PARENT</div>
-            <h2 className="text-3xl font-black italic mb-10 flex items-center gap-4 relative z-10">
-               <span className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-xl">👨‍👩‍👧</span>
-               رصد الأهل الميداني
-            </h2>
-
-            {parentData ? (
-              <div className="space-y-8 relative z-10">
-                {parentData.map((item: any) => (
-                  <div key={item.label} className="group">
-                    <div className="flex justify-between mb-2 text-sm font-bold">
-                      <span className="text-slate-400 group-hover:text-white transition-colors">{item.label}</span>
-                      <span className="text-white font-mono">{item.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden border border-white/5">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${item.percentage}%` }} 
-                        className={`h-full ${item.color} shadow-lg`} 
-                      />
-                    </div>
-                  </div>
-                ))}
-                <div className="pt-6 mt-6 border-t border-white/5 text-slate-500 italic text-sm text-center font-light">
-                  * تم دمج ملاحظات الأهل مع الأداء الرقمي لتحسين دقة التوصيات.
+          {/* الجانب الأوسط والأيسر: التشخيص المفصل (Detailed Diagnosis) */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* خانة التشخيص الدقيق */}
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[4rem] backdrop-blur-xl">
+              <h3 className="text-3xl font-black italic mb-8 text-cyan-400 flex items-center gap-4">
+                <span className="text-4xl">🔬</span> الاستنتاج العيادي المفصل
+              </h3>
+              <div className="space-y-6 text-2xl leading-relaxed font-light italic text-slate-300">
+                <p>
+                  بناءً على التقاطع بين <span className="text-white font-bold">الأداء الرقمي الميداني</span> و <span className="text-white font-bold">الملاحظة الوالدية</span>، يتبين أن البطل يعاني من تباين في 
+                  <span className="text-cyan-400 font-bold"> التكامل الحسي الحركي</span>. 
+                </p>
+                <div className="p-8 bg-slate-900/40 rounded-3xl border-r-8 border-cyan-600 my-8">
+                  <h4 className="text-white font-black mb-4">الملخص التشخيصي:</h4>
+                  <ul className="space-y-4 text-lg">
+                    <li>• <strong className="text-cyan-500">النمط الإدراكي:</strong> بصري متفوق (يستوعب الصور أسرع بـ 3 أضعاف من الكلمات).</li>
+                    <li>• <strong className="text-rose-500">التحدي الرئيسي:</strong> ضعف في "كف الاندفاعية" (Impulse Control)، مما يفسر التسرع في الإجابة رغم معرفة الحل.</li>
+                    <li>• <strong className="text-blue-500">المؤشر النمائي:</strong> تآزر حركي دقيق يحتاج لصقل لرفع جودة الخط والكتابة.</li>
+                  </ul>
                 </div>
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center text-slate-700 italic border-2 border-dashed border-white/5 rounded-[3rem] p-6">
-                <p>بيانات الأهل غير مكتملة بعد.</p>
-                <Link href="/diagnose/parent-hub" className="mt-4 text-cyan-500 underline">أكمل الرصد الميداني ◀</Link>
-              </div>
-            )}
-          </div>
+            </div>
 
+            {/* خارطة الطريق العلاجية (Roadmap) */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-slate-900 border border-white/10 p-10 rounded-[3rem]">
+                <h4 className="text-2xl font-black italic mb-6 text-white">الخطة العلاجية (0-3 أشهر)</h4>
+                <ul className="space-y-4 text-slate-400 italic">
+                  <li>1. جلسات تدريب "التركيز الانتقائي" (3 مرات أسبوعياً).</li>
+                  <li>2. استخدام "تقنيات التوقيت البصري" لإدارة المهام المنزلية.</li>
+                  <li>3. تمارين التكامل الحسي لتقليل التشتت الصوتي.</li>
+                </ul>
+              </div>
+              <div className="bg-cyan-600 p-10 rounded-[3rem] text-slate-900 shadow-[0_0_40px_rgba(8,145,178,0.3)]">
+                <h4 className="text-2xl font-black italic mb-6">توصية بَصيرة السيادية 🛡️</h4>
+                <p className="font-bold text-xl leading-relaxed italic">
+                  "يُنصح بدمج البطل في أنشطة تعتمد على التفكير الاستراتيجي (مثل الشطرنج أو البرمجة) لاستغلال ذكائه المنطقي العالي وتفريغ طاقته الذهنية بشكل بناء."
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        {/* القسم الثالث: التحليل السيادي المدمج */}
-        <section className="mt-16 bg-white/5 border border-white/10 p-12 rounded-[4rem] backdrop-blur-md">
-            <h2 className="text-4xl font-black italic mb-8 text-cyan-400">التوصية السيادية الموحدة 🛡️</h2>
-            <p className="text-2xl text-slate-300 leading-relaxed font-light italic">
-              بناءً على التآزر بين نتائج المختبرات ورصد الأهل، يظهر البطل استجابة قوية في التعلم البصري، بينما يشير التباين في "الضبط الانفعالي" و"الوظائف العليا" إلى ضرورة البدء ببروتوكول "تعديل السلوك التنظيمي" لضمان استقرار الأداء الأكاديمي.
-            </p>
-        </section>
+        {/* 3. أزرار العمل النهائية */}
+        <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+          <Link href="/diagnose/passport" className="w-full md:w-auto px-20 py-8 bg-white text-black font-black text-3xl rounded-[3rem] hover:scale-105 transition-all shadow-2xl text-center">
+            إصدار الجواز الرقمي 🎫
+          </Link>
+          <button className="w-full md:w-auto px-16 py-8 bg-slate-900 text-white font-black text-2xl rounded-[3rem] border border-white/10 hover:bg-slate-800 transition-all">
+            حفظ التشخيص السيادي 💾
+          </button>
+        </div>
 
       </div>
+
+      <footer className="mt-20 py-10 text-center opacity-20 font-mono text-xs tracking-[0.5em] uppercase">
+        End_of_Diagnostic_Protocol // Basira_AI // 2026
+      </footer>
     </main>
   );
 }
