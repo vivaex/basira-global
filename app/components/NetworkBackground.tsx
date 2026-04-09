@@ -1,6 +1,24 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  baseX: number;
+  baseY: number;
+  color: string;
+}
+
+const COLORS = [
+  'rgba(6, 182, 212, 0.7)',
+  'rgba(59, 130, 246, 0.5)',
+  'rgba(139, 92, 246, 0.4)',
+  'rgba(6, 182, 212, 0.4)',
+];
+
 export default function NetworkBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -12,80 +30,122 @@ export default function NetworkBackground() {
 
     let particles: Particle[] = [];
     let animationFrameId: number;
-
-    const mouse = { x: -100, y: -100 };
-
-    class Particle {
-      x: number; y: number;
-      vx: number; vy: number;
-      size: number;
-
-      constructor() {
-        this.x = Math.random() * canvas!.width;
-        this.y = Math.random() * canvas!.height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 2;
-      }
-
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
-      }
-
-      draw() {
-        ctx!.beginPath();
-        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx!.fillStyle = 'rgba(6, 182, 212, 0.5)'; // لون السيان
-        ctx!.fill();
-      }
-    }
+    const mouse = { x: -999, y: -999 };
 
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 100; i++) particles.push(new Particle());
+      const count = Math.min(120, Math.floor((canvas.width * canvas.height) / 12000));
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        particles.push({
+          x, y,
+          baseX: x,
+          baseY: y,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          size: Math.random() * 2 + 0.5,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        });
+      }
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       particles.forEach((p, i) => {
-        p.update();
-        p.draw();
+        // Mouse repulsion
+        const mdx = p.x - mouse.x;
+        const mdy = p.y - mouse.y;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < 120) {
+          const force = (120 - mdist) / 120;
+          p.x += mdx / mdist * force * 2;
+          p.y += mdy / mdist * force * 2;
+        }
+
+        // Drift back to base
+        p.x += (p.baseX - p.x) * 0.01 + p.vx;
+        p.y += (p.baseY - p.baseY) * 0.01 + p.vy;
+        p.baseX += p.vx;
+        p.baseY += p.vy;
+
+        // Bounce walls
+        if (p.baseX < 0 || p.baseX > canvas.width) p.vx *= -1;
+        if (p.baseY < 0 || p.baseY > canvas.height) p.vy *= -1;
+
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        // Draw connections
         for (let j = i + 1; j < particles.length; j++) {
           const dx = p.x - particles[j].x;
           const dy = p.y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
+          const maxDist = 160;
+          if (dist < maxDist) {
+            const alpha = (1 - dist / maxDist) * 0.5;
+            const gradient = ctx.createLinearGradient(p.x, p.y, particles[j].x, particles[j].y);
+            gradient.addColorStop(0, `rgba(6,182,212,${alpha})`);
+            gradient.addColorStop(1, `rgba(59,130,246,${alpha * 0.5})`);
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(6, 182, 212, ${1 - dist / 150})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 0.6;
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
         }
+
+        // Mouse connection highlight
+        if (mdist < 180) {
+          const alpha = (1 - mdist / 180) * 0.8;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(6,182,212,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
       });
+
       animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+    const onMouseLeave = () => {
+      mouse.x = -999;
+      mouse.y = -999;
     };
 
     init();
     animate();
 
     window.addEventListener('resize', init);
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseleave', onMouseLeave);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', init);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseleave', onMouseLeave);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-40" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{ opacity: 0.45 }}
+    />
+  );
 }

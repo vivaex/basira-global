@@ -1,93 +1,177 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 
-export default function SelectiveAttention() {
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'result'>('start');
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(25);
-  const [currentRobot, setCurrentRobot] = useState({ type: 'target', emoji: '🤖', color: 'text-green-500', id: 0 });
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ClinicalPlayerEngine from '@/app/components/ui/ClinicalPlayerEngine';
+import { useSound } from '@/hooks/useSound';
 
-  // دالة توليد الروبوت - تم فصلها لتكون مستقلة
-  const spawnRobot = useCallback(() => {
-    const isTarget = Math.random() > 0.4;
-    setCurrentRobot({
-      type: isTarget ? 'target' : 'distractor',
-      emoji: isTarget ? '🤖' : '👾',
-      color: isTarget ? 'text-green-500' : 'text-red-500',
-      id: Math.random() // Key عشوائي لإجبار الأنييميشن
+const STIMULI = [
+  { type: 'target', emoji: '🤖', color: 'text-emerald-400', label: 'Robot' },
+  { type: 'distractor', emoji: '👾', color: 'text-rose-500', label: 'Alien' },
+];
+
+export default function SelectiveAttentionTest() {
+  const { play } = useSound();
+  const [stimulus, setStimulus] = useState<{ type: string, emoji: string, color: string, id: number } | null>(null);
+  const [isResponded, setIsResponded] = useState(false);
+  const [trialCount, setTrialCount] = useState(0);
+
+  const trialStartTime = useRef<number>(0);
+  const nextTrialTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const generateTrial = useCallback((recordInteraction: any, difficulty: number) => {
+    // Audit previous trial for Omission Error
+    if (stimulus && stimulus.type === 'target' && !isResponded) {
+       recordInteraction({
+         isCorrect: false,
+         timestampDisplayed: trialStartTime.current,
+         timestampResponded: performance.now(),
+         responseValue: 'missed_go',
+         itemDifficulty: difficulty,
+         metadata: { errorType: 'omission' }
+       });
+    }
+
+    setIsResponded(false);
+    const isTarget = Math.random() > 0.35; // 65% Target (Go), 35% Distractor (No-Go)
+    const stim = isTarget ? STIMULI[0] : STIMULI[1];
+    
+    setStimulus({ ...stim, id: Math.random() });
+    trialStartTime.current = performance.now();
+
+    // Stimulus visibility duration (Adaptive)
+    const duration = Math.max(600, 1500 - difficulty * 150);
+    
+    if (nextTrialTimer.current) clearTimeout(nextTrialTimer.current);
+    nextTrialTimer.current = setTimeout(() => {
+       setStimulus(null);
+       // Small ITI (Inter-trial interval)
+       setTimeout(() => {
+         setTrialCount(prev => prev + 1);
+       }, 400);
+    }, duration);
+  }, [stimulus, isResponded]);
+
+  const handleResponse = (recordInteraction: any, difficulty: number) => {
+    if (isResponded || !stimulus) return;
+    setIsResponded(true);
+
+    const now = performance.now();
+    const isCorrect = stimulus.type === 'target';
+
+    recordInteraction({
+      isCorrect,
+      timestampDisplayed: trialStartTime.current,
+      timestampResponded: now,
+      responseValue: 'tap',
+      itemDifficulty: difficulty,
+      metadata: { 
+        errorType: isCorrect ? 'none' : 'commission',
+        reactionTime: now - trialStartTime.current
+      }
     });
+
+    if (isCorrect) {
+      play('success');
+    } else {
+      play('click');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (nextTrialTimer.current) clearTimeout(nextTrialTimer.current);
+    };
   }, []);
 
-  // تايمر الوقت (ينقص كل ثانية)
-  useEffect(() => {
-    if (gameState !== 'playing' || timeLeft <= 0) {
-      if (timeLeft === 0 && gameState === 'playing') {
-        if (typeof window !== 'undefined') localStorage.setItem('selectiveScore', score.toString());
-        setGameState('result');
-      }
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    return () => clearInterval(timer);
-  }, [gameState, timeLeft, score]);
-
-  // تايمر تغيير الإيموجي (تلقائي كل 1.2 ثانية)
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-    const robotTimer = setInterval(spawnRobot, 1200); // هون السر! بتغير لحاله
-    return () => clearInterval(robotTimer);
-  }, [gameState, spawnRobot]);
-
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6" dir="rtl">
-      <div className="bg-slate-900 p-10 rounded-[3rem] border-4 border-red-500/20 shadow-2xl max-w-2xl w-full text-center">
-        
-        {gameState === 'start' && (
-          <div className="animate-in zoom-in">
-            <h1 className="text-4xl font-black mb-8 text-red-500 italic">مختبر "القرار السريع"</h1>
-            <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-right mb-10">
-                <p className="text-slate-400 text-sm mb-4 italic">بناءً على معيار Go/No-Go العالمي لتشخيص الاندفاعية.</p>
-                <ul className="space-y-4 text-xl">
-                    <li>✅ اضغط على <span className="text-green-500 font-bold">الروبوت</span>.</li>
-                    <li>❌ طنّش <span className="text-red-500 font-bold">الفضائي</span>.</li>
-                </ul>
-            </div>
-            <button onClick={() => setGameState('playing')} className="bg-red-600 px-16 py-5 rounded-2xl font-black text-2xl">هجوم! 🚀</button>
-          </div>
-        )}
+    <ClinicalPlayerEngine
+      title="انتباه انتقائي (Go / No-Go Test)"
+      category="attention_selective"
+      domainId="attention"
+      description="تقييم القدرة على التركيز وسرعة القرار وكبح الاندفاعية (Inhibition Control)."
+      instruction="المهمة: اضغط بسرعة عند ظهور الروبوت الأخضر 🤖، ولكن توقف تماماً ولا تلمس الشاشة عند ظهور الكائن الفضائي الأحمر 👾."
+      icon="🚀"
+      color="rose"
+      onComplete={() => {}}
+    >
+      {({ recordInteraction, difficulty, gameState }: any) => (
+        <div className="w-full flex flex-col items-center">
+          
+          <div 
+            onClick={() => handleResponse(recordInteraction, difficulty)}
+            className="mb-16 relative w-full max-w-5xl h-[34rem] flex items-center justify-center bg-slate-900/40 rounded-[5rem] border-4 border-white/5 shadow-[inset_0_0_150px_rgba(0,0,0,0.8)] overflow-hidden cursor-crosshair active:bg-slate-900/60 transition-colors"
+          >
+             <AnimatePresence mode="wait">
+                {gameState === 'playing' && stimulus && (
+                  <motion.div
+                    key={stimulus.id}
+                    initial={{ scale: 0, opacity: 0, rotate: -20 }}
+                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                    exit={{ scale: 1.5, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 12, stiffness: 200 }}
+                    className="relative z-10"
+                  >
+                     <div className={`text-[15rem] md:text-[20rem] drop-shadow-[0_0_80px_rgba(255,255,255,0.1)] ${stimulus.color} select-none`}>
+                        {stimulus.emoji}
+                     </div>
+                     
+                     {/* Visual Pulse for Targets */}
+                     {stimulus.type === 'target' && (
+                       <motion.div
+                         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0, 0.1] }}
+                         transition={{ repeat: Infinity, duration: 1 }}
+                         className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[100px]"
+                       />
+                     )}
+                  </motion.div>
+                )}
+             </AnimatePresence>
+             
+             {/* HUD overlays */}
+             <div className="absolute top-12 left-14 text-slate-700 font-bold uppercase tracking-[0.4em] text-[0.6rem]">
+                Attention_Protocol: Selective_V2
+             </div>
+             <div className="absolute bottom-12 right-14 text-slate-700 font-bold uppercase tracking-[0.4em] text-[0.6rem]">
+                Signal_Detection: Active
+             </div>
 
-        {gameState === 'playing' && (
-          <div className="animate-in fade-in">
-            <div className="flex justify-between mb-12">
-               <span className="text-yellow-400 text-2xl font-mono">⏳ {timeLeft}</span>
-               <span className="text-green-500 text-2xl font-black">النقاط: {score}</span>
-            </div>
-            
-            <div className="h-64 flex items-center justify-center">
-                <button 
-                    key={currentRobot.id} // هذا السطر بخلي الإيموجي "ينط" لما يتغير
-                    onClick={() => {
-                        if (currentRobot.type === 'target') setScore(s => s + 10);
-                        else setScore(s => Math.max(0, s - 15));
-                        spawnRobot();
-                    }}
-                    className={`text-[10rem] md:text-[12rem] animate-in zoom-in duration-200 ${currentRobot.color} drop-shadow-2xl`}
-                >
-                    {currentRobot.emoji}
-                </button>
-            </div>
+             {/* Dynamic Aim UI */}
+             <div className="absolute inset-0 pointer-events-none border-[40px] border-black/20" />
           </div>
-        )}
 
-        {gameState === 'result' && (
-          <div className="animate-in zoom-in">
-            <h2 className="text-6xl font-black text-red-500 mb-8 font-sans">انتهى التحدي!</h2>
-            <div className="text-9xl font-black mb-10">{score}</div>
-            <Link href="/diagnose/attention" className="bg-slate-800 px-12 py-4 rounded-xl font-bold">العودة للمختبر</Link>
+          <div className="flex items-center gap-16 px-16 py-8 bg-slate-900/40 rounded-[3rem] border border-white/5 backdrop-blur-xl">
+             <div className="flex flex-col items-center">
+                <div className="text-slate-500 text-[0.6rem] font-black uppercase tracking-[0.3em] mb-2 font-arabic">سرعة الاستجابة</div>
+                <div className="text-5xl font-black text-white font-mono">
+                  {difficulty.toFixed(1)}x
+                </div>
+             </div>
+             <div className="w-[2px] h-14 bg-white/5" />
+             <div className="flex flex-col items-center">
+                <div className="text-slate-500 text-[0.6rem] font-black uppercase tracking-[0.3em] mb-2 font-arabic">رقم المحاولة</div>
+                <div className="text-5xl font-black text-rose-500 font-mono">
+                  {String(trialCount).padStart(2, '0')}
+                </div>
+             </div>
           </div>
-        )}
-      </div>
-    </main>
+
+          <GameTrigger 
+            gameState={gameState} 
+            trialCount={trialCount} 
+            onStart={() => generateTrial(recordInteraction, difficulty)} 
+          />
+        </div>
+      )}
+    </ClinicalPlayerEngine>
   );
 }
+
+function GameTrigger({ gameState, trialCount, onStart }: any) {
+  useEffect(() => {
+    if (gameState === 'playing') {
+      onStart();
+    }
+  }, [gameState, trialCount, onStart]);
+  return null;
+}

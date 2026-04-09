@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Clinic {
+  id            String      @id @default(cuid())
+  name          String
+  licenseNumber String?
+  location      String?
+  logo          String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  users         User[]
+  students      Student[]
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  password      String      // Hashed
+  name          String
+  role          String      @default("SPECIALIST") // "ADMIN", "SPECIALIST"
+  clinicId      String
+  clinic        Clinic      @relation(fields: [clinicId], references: [id])
+  students      Student[]   @relation("AssignedClinician")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Student {
+  id            String      @id @default(cuid())
+  name          String
+  age           Int?
+  gender        String?
+  grade         String?
+  profileData   String?     // JSON serialized StudentProfile
+  clinicId      String
+  clinic        Clinic      @relation(fields: [clinicId], references: [id])
+  specialistId  String?
+  specialist    User?       @relation("AssignedClinician", fields: [specialistId], references: [id])
+  sessions      Session[]
+  missions      MissionProgress[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Session {
+  id            String      @id @default(cuid())
+  testId        String
+  testCategory  String
+  testTitle     String
+  rawScore      Int
+  metrics       String?     // JSON serialized metrics (attention, emotional, etc.)
+  completedAt   DateTime    @default(now())
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id])
+}
+
+model MissionProgress {
+  id            String      @id @default(cuid())
+  missionId     String
+  date          String      // YYYY-MM-DD
+  isClaimed     Boolean     @default(false)
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@unique([missionId, date, studentId])
+}

@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import AliCharacter from '../../components/ui/AliCharacter';
+import { getStudentProfile } from '@/lib/studentProfile';
 
 const questions = [
   { id: 1, category: 'الانتباه', text: 'هل يجد البطل صعوبة في إكمال المهام التي تتطلب تركيزاً طويلاً (مثل الواجبات)؟' },
@@ -20,6 +22,7 @@ export default function ParentHub() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const router = useRouter();
+  const profile = getStudentProfile();
 
   const handleAnswer = (score: number) => {
     setAnswers({ ...answers, [questions[currentStep].id]: score });
@@ -44,8 +47,11 @@ export default function ParentHub() {
       <div className="max-w-4xl mx-auto relative z-10">
         
         <header className="text-center mb-16">
-          <div className="inline-block px-4 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-xs font-mono tracking-widest mb-4 uppercase">
-            Parental_Intelligence_Protocol
+          <div className="flex flex-col items-center gap-6 mb-4">
+             <AliCharacter name={profile?.name} state="thinking" variant="compact" />
+             <div className="inline-block px-4 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-xs font-mono tracking-widest uppercase">
+               Parental_Intelligence_Protocol
+             </div>
           </div>
           <h1 className="text-5xl font-black italic mb-4">مختبر <span className="text-cyan-400">الرصد الوالدي</span></h1>
           <p className="text-slate-400 text-xl font-light italic">مساهمتكم هي حجر الزاوية في بناء الجواز التعليمي للبطل.</p>

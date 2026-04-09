@@ -1,74 +1,143 @@
 'use client';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
-const WORD_BANK = [
-  { word: "مـدرسة", isReal: true },
-  { word: "سـمـقـة", isReal: false },
-  { word: "طـيـارة", isReal: true },
-  { word: "خـرنـبـل", isReal: false },
-  { word: "كـتـاب", isReal: true },
-  { word: "صـمـبـاخ", isReal: false },
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ClinicalPlayerEngine from '@/app/components/ui/ClinicalPlayerEngine';
+import { useSound } from '@/hooks/useSound';
+
+// TOWRE-inspired stimuli: Real words vs. Pseudo-words (Nonsense words)
+const STIMULI = [
+  // Level 1: Simple
+  { word: "قلم", isReal: true, difficulty: 1 },
+  { word: "درب", isReal: true, difficulty: 1 },
+  { word: "سـبـق", isReal: false, difficulty: 1 },
+  { word: "بـحـر", isReal: true, difficulty: 1 },
+  
+  // Level 2: Medium
+  { word: "مـسـتـقـبل", isReal: true, difficulty: 2 },
+  { word: "خـرنـبـل", isReal: false, difficulty: 2 },
+  { word: "طـيـارة", isReal: true, difficulty: 2 },
+  { word: "صـمـبـاخ", isReal: false, difficulty: 2 },
+  
+  // Level 3: Advanced
+  { word: "اسـتـكـشاف", isReal: true, difficulty: 3 },
+  { word: "مـطـمـطـام", isReal: false, difficulty: 3 },
+  { word: "تـكـنـولـوجـيا", isReal: true, difficulty: 3 },
+  { word: "قـنـفـقـان", isReal: false, difficulty: 3 },
 ];
 
 export default function VisualWordTest() {
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'result'>('start');
+  const { play } = useSound();
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [showStimulus, setShowStimulus] = useState(false);
+  const flashTimer = useRef<any>(null);
 
-  useEffect(() => {
-    let timer: any;
-    if (gameState === 'playing' && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    } else if (timeLeft === 0 && gameState === 'playing') {
-      if (typeof window !== 'undefined') localStorage.setItem('readingVisualScore', score.toString());
-      setGameState('result');
+  const spawnStimulus = useCallback(() => {
+    setShowStimulus(true);
+    play('click');
+    
+    // Flash stimuli for a limited time to measure "Sight Word" efficiency
+    // Difficulty 1: 1500ms, Difficulty 2: 1000ms, Difficulty 3: 700ms
+    const flashDuration = STIMULI[currentIdx].difficulty === 1 ? 1500 : 
+                          STIMULI[currentIdx].difficulty === 2 ? 1000 : 750;
+
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => {
+      setShowStimulus(false);
+    }, flashDuration);
+  }, [currentIdx, play]);
+
+  const handleChoice = (isRealChoice: boolean, setScore: any, nextRound: any) => {
+    const isCorrect = isRealChoice === STIMULI[currentIdx].isReal;
+    
+    if (isCorrect) {
+      setScore((s: number) => s + 10);
+      play('success');
+    } else {
+      play('click');
     }
-    return () => clearInterval(timer);
-  }, [gameState, timeLeft, score]);
 
-  const handleChoice = (choice: boolean) => {
-    if (choice === WORD_BANK[currentIdx].isReal) setScore(s => s + 10);
-    setCurrentIdx((prev) => (prev + 1) % WORD_BANK.length);
+    if (currentIdx + 1 < STIMULI.length) {
+      setCurrentIdx(prev => prev + 1);
+      setTimeout(spawnStimulus, 800); // Small gap between trials
+      nextRound(isCorrect); // Trigger IRT scaling
+    } else {
+      // Completion handled by ClinicalPlayerEngine
+    }
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 font-sans" dir="rtl">
-      <div className="bg-slate-900 p-8 md:p-12 rounded-[3.5rem] border-4 border-cyan-500/20 shadow-2xl max-w-2xl w-full text-center">
-        {gameState === 'start' && (
-          <div className="animate-in zoom-in">
-            <div className="text-7xl mb-6">👁️</div>
-            <h1 className="text-4xl font-black mb-8 text-cyan-400">تحدي التعرف السريع</h1>
-            <p className="text-slate-400 mb-10 italic leading-relaxed">مبني على اختبار **TOWRE** لقياس كفاءة المسار البصري للقراءة وتجاوز مرحلة التهجئة البطيئة.</p>
-            <button onClick={() => setGameState('playing')} className="bg-cyan-600 px-16 py-5 rounded-2xl font-black text-2xl">ابدأ السباق 🏎️</button>
+    <ClinicalPlayerEngine
+      title="الكفاءة البصرية (Visual Efficiency)"
+      category="reading_visual_word"
+      description="تقييم سرعة التعرف على الكلمات (TOWRE) والتمييز بين الكلمات الحقيقية والزائفة."
+      instruction="المهمة: ستظهر كلمة بسرعة كبيرة. اضغط 'حقيقية' إذا كانت كلمة موجودة، أو 'زائفة' إذا لم يكن لها معنى."
+      icon="👁️"
+      color="cyan"
+      onComplete={() => {}}
+    >
+      {({ setScore, nextRound, gameState }: any) => (
+        <div className="w-full flex flex-col items-center">
+          
+          <div className="h-64 flex items-center justify-center mb-16 relative w-full">
+            <AnimatePresence mode="wait">
+              {showStimulus && gameState === 'playing' ? (
+                <motion.div
+                  key={currentIdx}
+                  initial={{ scale: 0.8, opacity: 0, filter: 'blur(10px)' }}
+                  animate={{ scale: 1.1, opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ scale: 1.5, opacity: 0, filter: 'blur(10px)' }}
+                  className="bg-slate-900/40 backdrop-blur-3xl px-16 py-12 rounded-[3.5rem] border border-white/10 shadow-[0_0_50px_rgba(6,182,212,0.1)]"
+                >
+                  <span className="text-7xl md:text-8xl font-black tracking-widest text-white font-serif">
+                    {STIMULI[currentIdx].word}
+                  </span>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 0.2 }} 
+                  className="text-slate-600 text-2xl italic font-black"
+                >
+                  {gameState === 'playing' ? '...ترقب الكلمة...' : ''}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
 
-        {gameState === 'playing' && (
-          <div className="animate-in fade-in">
-            <div className="flex justify-between mb-8 text-2xl font-mono text-cyan-400">
-               <span>⏳ {timeLeft}ث</span>
-               <span>النقاط: {score}</span>
-            </div>
-            <div className="bg-slate-950 py-16 rounded-[2.5rem] border-2 border-slate-800 mb-12">
-               <span className="text-7xl font-black tracking-widest">{WORD_BANK[currentIdx].word}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              <button onClick={() => handleChoice(true)} className="bg-green-600 p-8 rounded-3xl text-2xl font-black hover:scale-105 active:scale-90 transition-all">كلمة حقيقية ✅</button>
-              <button onClick={() => handleChoice(false)} className="bg-red-600 p-8 rounded-3xl text-2xl font-black hover:scale-105 active:scale-90 transition-all">ليست كلمة ❌</button>
-            </div>
+          <div className="grid grid-cols-2 gap-8 w-full max-w-3xl">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleChoice(true, setScore, nextRound)}
+              className="bg-emerald-600/20 hover:bg-emerald-600 border-2 border-emerald-500/30 p-10 rounded-[3rem] text-3xl font-black text-white transition-all shadow-xl"
+            >
+              كلمة حقيقية ✅
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleChoice(false, setScore, nextRound)}
+              className="bg-rose-600/20 hover:bg-rose-600 border-2 border-rose-500/30 p-10 rounded-[3rem] text-3xl font-black text-white transition-all shadow-xl"
+            >
+              ليست كلمة ❌
+            </motion.button>
           </div>
-        )}
+          
+          <p className="mt-8 text-slate-500 font-bold uppercase tracking-widest text-sm">التحدي: السرعة والدقة معاً</p>
 
-        {gameState === 'result' && (
-          <div className="animate-in zoom-in">
-            <h2 className="text-6xl font-black text-cyan-400 mb-8 italic">سرعة بصرية مذهلة!</h2>
-            <div className="text-9xl font-black mb-10">{score}</div>
-            <Link href="/diagnose/reading" className="bg-slate-800 px-12 py-4 rounded-xl font-bold">العودة للمختبر</Link>
-          </div>
-        )}
-      </div>
-    </main>
+          <GameTrigger gameState={gameState} onStart={spawnStimulus} />
+        </div>
+      )}
+    </ClinicalPlayerEngine>
   );
 }
+
+function GameTrigger({ gameState, onStart }: any) {
+  useEffect(() => {
+    if (gameState === 'playing') {
+      onStart();
+    }
+  }, [gameState, onStart]);
+  return null;
+}

@@ -1,122 +1,140 @@
 'use client';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
-const LEVELS = [
-  { main: '🍎', odd: '🍅', size: 4 }, // التفاحة والبندورة (متشابهين)
-  { main: '⚽', odd: '🏀', size: 9 }, // كرة قدم وسلة
-  { main: '🐱', odd: '🐯', size: 12 }, // قطة ونمر
-  { main: '🌲', odd: '🌳', size: 16 }, // شجرتين مختلفتين
-  { main: '🤖', odd: '👾', size: 20 }, // آلي وفضائي
-  { main: '🛡️', odd: '⚓', size: 25 }, // درع ومخطاف
-];
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { motion, AnimatePresence } from 'framer-motion';
+import ClinicalPlayerEngine from '@/app/components/ui/ClinicalPlayerEngine';
+import { useSound } from '@/hooks/useSound';
+import DiscriminationGrid from '@/app/components/visuals/DiscriminationGrid';
+import NeuralNetwork from '@/app/components/visuals/NeuralNetwork';
 
-export default function DiscriminationTest() {
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'result'>('start');
-  const [levelIdx, setLevelIdx] = useState(0);
-  const [score, setScore] = useState(0);
-  const [grid, setGrid] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState(0);
+type SymbolType = 'torus' | 'octahedron' | 'dodecahedron' | 'icosahedron' | 'sphere';
+const SYMBOLS: SymbolType[] = ['torus', 'octahedron', 'dodecahedron', 'icosahedron', 'sphere'];
+const COLORS = ['#3b82f6', '#a855f7', '#22d3ee', '#10b981', '#f43f5e', '#f59e0b'];
 
-  const startLevel = () => {
-    if (levelIdx >= LEVELS.length) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('visualScore', score.toString());
-        localStorage.setItem('visualDone', 'true');
-      }
-      setGameState('result');
-      return;
+export default function VisualDiscriminationTest() {
+  const { play } = useSound();
+  const [trialData, setTrialData] = useState<{
+    targets: Array<{ type: SymbolType, color: string }>;
+    options: Array<{ type: SymbolType, color: string, isMatch: boolean }>;
+  } | null>(null);
+  
+  const trialStartTime = useRef<number>(0);
+
+  const generateTrial = useCallback((difficulty: number) => {
+    // Standard WISC-V Symbol Search Complexity
+    const numTargets = difficulty < 4 ? 1 : 2;
+    const numOptions = Math.min(6, 3 + Math.floor(difficulty / 2));
+    
+    const targets = Array.from({ length: numTargets }).map(() => ({
+      type: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      color: COLORS[Math.floor(Math.random() * COLORS.length)]
+    }));
+
+    const matchIdx = Math.floor(Math.random() * numOptions);
+    const options = Array.from({ length: numOptions }).map((_, i) => {
+      if (i === matchIdx) return { ...targets[Math.floor(Math.random() * targets.length)], isMatch: true };
+      
+      let type: SymbolType, color: string;
+      do {
+        type = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+        color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      } while (targets.some(t => t.type === type && t.color === color));
+      
+      return { type, color, isMatch: false };
+    });
+
+    setTrialData({ targets, options });
+    trialStartTime.current = performance.now();
+  }, []);
+
+  const handleSelect = (isMatch: boolean, recordInteraction: any, difficulty: number) => {
+    if (!trialData) return;
+    
+    const now = performance.now();
+    const rt = now - trialStartTime.current;
+    
+    recordInteraction({
+      isCorrect: isMatch,
+      timestampDisplayed: trialStartTime.current,
+      timestampResponded: now,
+      responseDuration: rt,
+      itemDifficulty: difficulty,
+      responseValue: isMatch ? 'hit' : 'miss',
+      metadata: { numTargets: trialData.targets.length, numOptions: trialData.options.length }
+    });
+
+    if (isMatch) {
+      play('success');
+    } else {
+      play('click');
     }
 
-    const current = LEVELS[levelIdx];
-    const newGrid = Array(current.size).fill(current.main);
-    const oddIdx = Math.floor(Math.random() * current.size);
-    newGrid[oddIdx] = current.odd;
-    
-    setGrid(newGrid);
-    setStartTime(Date.now());
-    setGameState('playing');
+    // Standard Processing Speed feedback: keep pulse minimal to maintain flow
+    setTimeout(() => generateTrial(difficulty), 400);
   };
-
-  const handleSelect = (emoji: string) => {
-    const isCorrect = emoji === LEVELS[levelIdx].odd;
-    const timeTaken = (Date.now() - startTime) / 1000;
-    
-    if (isCorrect) {
-      // السكور يعتمد على السرعة: كل ما كنت أسرع، السكور أعلى
-      const levelScore = Math.max(5, Math.floor(20 - timeTaken));
-      setScore(s => s + levelScore);
-    }
-    
-    setTimeout(() => {
-      setLevelIdx(prev => prev + 1);
-      setGameState('start'); // نرجع لستارت عشان نولد ليفل جديد
-    }, 300);
-  };
-
-  // توليد الليفل أول ما يرجع لستارت إذا كنا في نص اللعبة
-  useEffect(() => {
-    if (gameState === 'start' && levelIdx > 0 && levelIdx < LEVELS.length) {
-      startLevel();
-    }
-  }, [gameState]);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6" dir="rtl">
-      <div className="bg-slate-900 p-8 md:p-12 rounded-[3rem] border-4 border-purple-500/20 shadow-2xl max-w-3xl w-full text-center">
-        
-        {gameState === 'start' && levelIdx === 0 && (
-          <div className="animate-in zoom-in">
-            <div className="text-8xl mb-6">🔍</div>
-            <h1 className="text-4xl font-black mb-6 text-purple-400">تحدي التمييز البصري</h1>
-            <p className="text-xl text-slate-400 mb-10 leading-relaxed">
-                هناك عنصر واحد "مختلف" يختبئ بين الأشكال.. <br/> هل تستطيع إيجاده بسرعة البرق؟ ⚡
-            </p>
-            <button onClick={startLevel} className="bg-purple-600 hover:bg-purple-500 px-16 py-5 rounded-2xl font-black text-2xl shadow-xl transition-all">
-                ابدأ البحث! 🚀
-            </button>
-          </div>
-        )}
+    <ClinicalPlayerEngine
+      title="التمييز البصري وسرعة المعالجة (Symbol Search)"
+      category="visual_discrimination"
+      domainId="visual"
+      description="قياس سرعة المعالجة البصرية والتمييز بين الأشكال المعقدة (WISC-V)."
+      instruction="المهمة: ابحث عن أحد الرموز في المجموعة 'العلوية' المرجعية داخل المجموعة 'السفلية' واضغط عليه بأسرع ما يمكن."
+      icon="⚡"
+      color="cyan"
+      onComplete={() => {}}
+    >
+      {({ recordInteraction, difficulty, gameState }: any) => (
+        <div className="w-full h-full relative">
+           {/* 3D Scene Background & Game Layer */}
+           <div className="absolute inset-x-0 top-0 h-[48rem] bg-slate-950/40 rounded-[5rem] overflow-hidden border-2 border-white/5 z-0">
+              <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+                <ambientLight intensity={0.6} />
+                <pointLight position={[10, 10, 10]} intensity={1.5} />
+                <Suspense fallback={null}>
+                    <NeuralNetwork count={40} />
+                    {trialData && gameState === 'playing' && (
+                      <DiscriminationGrid
+                        targets={trialData.targets}
+                        options={trialData.options}
+                        onSelect={(isMatch) => handleSelect(isMatch, recordInteraction, difficulty)}
+                        difficulty={difficulty / 10}
+                      />
+                    )}
+                </Suspense>
+              </Canvas>
+              
+              {/* Overlay for Target Group Labelling (Ambient UI) */}
+              <div className="absolute top-[32%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none opacity-50">
+                 <div className="text-cyan-500 font-bold text-[0.6rem] uppercase tracking-[0.4em]">Reference_Set</div>
+                 <div className="w-[30rem] h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+              </div>
 
-        {gameState === 'playing' && (
-          <div className="animate-in fade-in">
-            <div className="flex justify-between mb-8 text-slate-500 font-bold italic">
-               <span>المستوى {levelIdx + 1} / {LEVELS.length}</span>
-               <span className="text-purple-400">النقاط: {score}</span>
-            </div>
-            
-            <h2 className="text-2xl mb-8 font-bold">اضغط على الشكل المختلف!</h2>
+              <div className="absolute top-[68%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none opacity-50">
+                 <div className="text-slate-600 font-bold text-[0.6rem] uppercase tracking-[0.4em]">Action_Set</div>
+                 <div className="w-[45rem] h-[1px] bg-gradient-to-r from-transparent via-slate-500/10 to-transparent" />
+              </div>
+           </div>
 
-            <div className={`grid gap-3 mx-auto`} style={{ 
-                gridTemplateColumns: `repeat(${Math.sqrt(grid.length)}, minmax(0, 1fr))` 
-              }}>
-              {grid.map((emoji, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => handleSelect(emoji)} 
-                  className="text-4xl md:text-5xl p-4 bg-slate-800 hover:bg-slate-700 rounded-2xl transition-all active:scale-75 shadow-lg border border-slate-700"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {gameState === 'result' && (
-          <div className="animate-in zoom-in">
-            <div className="text-8xl mb-6">🦅</div>
-            <h2 className="text-5xl font-black text-purple-400 mb-6">عين الصقر!</h2>
-            <div className="bg-slate-950 p-10 rounded-[2.5rem] mb-10 border border-purple-500/20">
-               <p className="text-slate-500 mb-2">سكور قوة الملاحظة:</p>
-               <div className="text-8xl font-black text-white">{score}</div>
-            </div>
-            <Link href="/diagnose/visual">
-              <button className="bg-slate-800 px-10 py-4 rounded-xl font-bold">العودة لمختبر البصر</button>
-            </Link>
-          </div>
-        )}
-      </div>
-    </main>
+           <GameTrigger gameState={gameState} onStart={() => generateTrial(difficulty)} />
+           
+           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-700 text-[0.6rem] font-bold uppercase tracking-[0.4em] italic text-center w-full">
+             WISC-PSI standard Integration | 3D Space processing v4.1
+           </div>
+        </div>
+      )}
+    </ClinicalPlayerEngine>
   );
+}
+
+function GameTrigger({ gameState, onStart }: any) {
+  const started = useRef(false);
+  useEffect(() => {
+    if (gameState === 'playing' && !started.current) {
+      started.current = true;
+      onStart();
+    }
+  }, [gameState, onStart]);
+  return null;
 }

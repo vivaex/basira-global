@@ -2,107 +2,398 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/app/components/LanguageContext';
+import {
+  getAllTestSessions,
+  getStudentProfile,
+  buildLearningPassport,
+  SKILL_LEVEL_LABELS,
+  DIFFICULTY_LEVEL_LABELS,
+  getSkillLevelLabel,
+  scoreToDifficultyLevel,
+  getCaseStudy,
+} from '@/lib/studentProfile';
+import AliCharacter from '@/app/components/ui/AliCharacter';
 
+// ────────────────────────────────────────────────
+// DifficultyBar Component
+// ────────────────────────────────────────────────
+function DifficultyBar({ score }: { score: number }) {
+  const level = scoreToDifficultyLevel(score);
+  const colors: Record<string, string> = {
+    none: 'from-emerald-500 to-teal-400',
+    mild: 'from-amber-400 to-yellow-300',
+    moderate: 'from-orange-500 to-amber-400',
+    severe: 'from-rose-600 to-red-500',
+  };
+  const widthMap: Record<string, string> = { none: '100%', mild: '70%', moderate: '45%', severe: '20%' };
+  return (
+    <div className="mt-3">
+      <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-1">
+        <span>{DIFFICULTY_LEVEL_LABELS[level]}</span>
+        <span>{score}%</span>
+      </div>
+      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: widthMap[level] }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className={`h-full bg-gradient-to-r ${colors[level]} rounded-full`}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────
+// Main Results Page
+// ────────────────────────────────────────────────
 export default function RealTimeDiagnosticResults() {
+  const { t, language } = useLanguage();
   const [name, setName] = useState('البطل');
   const [childResults, setChildResults] = useState<any[]>([]);
   const [parentStats, setParentStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+  const [sessions, setSessions] = useState<any[]>([]);
 
   useEffect(() => {
-    // 1. جلب البيانات الخام من المتصفح
+    // 1. جلب اسم الطفل
     const savedName = localStorage.getItem('studentName');
     const savedParent = localStorage.getItem('parentAssessment');
-    const savedGames = localStorage.getItem('gameResults'); // نفترض أن الألعاب تخزن سكوراتها هنا
-
     if (savedName) setName(savedName);
 
-    // 2. معالجة نتائج الألعاب (الـ 10 مختبرات)
-    // إذا لم توجد نتائج حقيقية بعد، سنضع 0 كقيمة افتراضية لكي لا تظهر أرقام وهمية
+    // 2. ملف الطالب والجلسات
+    const profile = getStudentProfile();
+    if (profile) {
+      setStudentProfile(profile);
+      if (profile.name) setName(profile.name);
+    }
+    const allSessions = getAllTestSessions();
+    setSessions(allSessions);
+
+    // 3. دالة مساعدة: تجلب قيمة رقمية من localStorage أو null
+    const getNum = (key: string): number | null => {
+      const val = localStorage.getItem(key);
+      if (val === null) return null;
+      const n = parseFloat(val);
+      return isNaN(n) ? null : n;
+    };
+
+    const isValid = (n: any): n is number => typeof n === 'number' && !isNaN(n);
+
+    const avg = (...keys: string[]): number => {
+      const vals = keys.map(getNum).filter(isValid);
+      if (vals.length === 0) return 0;
+      return Math.min(100, Math.round(vals.reduce((a, b) => a + b, 0) / vals.length));
+    };
+
+    // 4. حساب نتيجة كل مختبر
+    const mathScore      = avg('mathScore', 'countingScore', 'patternsScore');
+    const visualScore    = avg('visualScore', 'spatialScore', 'figureGroundScore', 'trackingScore');
+    const attentionScore = avg('selectiveScore', 'sustainedScore');
+    const memoryScore    = avg('memoryScore');
+
+    const motorReaction  = getNum('motorReactionScore');
+    const motorTapping   = getNum('motorTappingScore');
+    const motorPrecision = getNum('motorPrecisionScore');
+    const motorParts: number[] = [];
+    if (isValid(motorReaction)) motorParts.push(Math.max(0, Math.min(100, Math.round(100 - (motorReaction / 1000) * 100))));
+    if (isValid(motorTapping))  motorParts.push(Math.min(100, Math.round((motorTapping / 30) * 100)));
+    if (isValid(motorPrecision)) motorParts.push(Math.min(100, motorPrecision));
+    const motorScore = motorParts.length
+      ? Math.round(motorParts.reduce((a, b) => a + b, 0) / motorParts.length) : 0;
+
+    const langPhonology = getNum('languagePhonologyScore');
+    const langFluency   = getNum('languageFluencyScore');
+    const langRAN       = getNum('languageRANScore');
+    const langParts: number[] = [];
+    if (isValid(langPhonology)) langParts.push(Math.min(100, langPhonology));
+    if (isValid(langFluency))   langParts.push(Math.min(100, Math.round((langFluency / 20) * 100)));
+    if (isValid(langRAN))       langParts.push(Math.max(0, Math.min(100, Math.round(100 - (langRAN / 15) * 100))));
+    const languageScore = langParts.length
+      ? Math.round(langParts.reduce((a, b) => a + b, 0) / langParts.length) : 0;
+
+    const auditoryScore  = avg('auditoryScore');
+    const executiveScore = avg('execFlexScore', 'execInhibScore', 'execLogicScore');
+    const cognitiveScore = avg('cognitiveScore');
+    const writingScore   = avg('writingScore');
+
+    // New Clinical Hubs (Averaged from multiple sub-tests)
+    const adhdClinicalScore        = avg('adhd_speed_trapScore', 'adhd_cptScore', 'adhdScore');
+    const autismClinicalScore      = avg('autism_emotionScore', 'autism_socialScore', 'autismScore');
+    const memoryProbClinicalScore  = avg('memory_prob_sequenceScore', 'memory_prob_digitScore', 'memory_probScore');
+    const ldClinicalScore          = avg('ld_alchemyScore', 'ld_ranScore', 'learning_disScore');
+    const anxietyClinicalScore     = avg('anxiety_shieldScore', 'anxiety_calmScore', 'anxietyScore');
+    const socialCommClinicalScore  = avg('social_navigatorScore', 'social_toneScore', 'social_commScore');
+    const attentionProbClinicalScore = avg('attention_prob_searchScore', 'attention_prob_trackingScore', 'attention_probScore');
+    const perceptionProbClinicalScore = avg('perception_prob_ghostScore', 'perception_prob_detailScore', 'perception_probScore');
+    const simpleLangClinicalScore  = avg('simple_lang_echoScore', 'simple_lang_namingScore', 'simple_langScore');
+
+    const scoreMap: Record<string, number> = {
+      math: mathScore, visual: visualScore, attention: attentionScore,
+      memory: memoryScore, motor: motorScore, language: languageScore,
+      auditory: auditoryScore, executive: executiveScore,
+      cognitive: cognitiveScore, writing: writingScore,
+      
+      // Full Clinical Diagnostics
+      learning_dis: ldClinicalScore,
+      adhd: adhdClinicalScore,
+      attention_prob: attentionProbClinicalScore,
+      memory_prob: memoryProbClinicalScore,
+      perception_prob: perceptionProbClinicalScore,
+      simple_lang: simpleLangClinicalScore,
+      autism: autismClinicalScore,
+      social_comm: socialCommClinicalScore,
+      anxiety: anxietyClinicalScore,
+    };
+
+    // Also pull from saved sessions if score is 0
+    for (const s of allSessions) {
+      const cat = s.testCategory;
+      if (scoreMap[cat] === 0 && s.rawScore > 0) {
+        scoreMap[cat] = s.rawScore;
+      }
+    }
+
     const labsConfig = [
-      { id: 'math', title: 'المنطق الرقمي', icon: '🔢', color: 'border-blue-500/30' },
-      { id: 'visual', title: 'البصر المكاني', icon: '👁️', color: 'border-purple-500/30' },
-      { id: 'attention', title: 'التركيز العميق', icon: '🎯', color: 'border-red-500/30' },
-      { id: 'memory', title: 'الذاكرة السيادية', icon: '🧠', color: 'border-emerald-500/30' },
-      { id: 'motor', title: 'التآزر الحركي', icon: '✍️', color: 'border-rose-500/30' },
-      { id: 'language', title: 'البناء اللغوي', icon: '📖', color: 'border-indigo-500/30' },
-      { id: 'auditory', title: 'الرصد السمعي', icon: '👂', color: 'border-cyan-500/30' },
-      { id: 'executive', title: 'الوظائف العليا', icon: '⚙️', color: 'border-fuchsia-500/30' },
-      { id: 'cognitive', title: 'الإدراك العام', icon: '💡', color: 'border-amber-500/30' },
-      { id: 'writing', title: 'التعبير الكتابي', icon: '🖋️', score: 91, color: 'border-teal-500/30' },
+      { id: 'math',      title: 'المنطق الرقمي',   icon: '🔢', color: 'border-blue-500/30',     accent: '#3b82f6' },
+      { id: 'visual',    title: 'البصر المكاني',    icon: '👁️', color: 'border-purple-500/30',   accent: '#8b5cf6' },
+      { id: 'attention', title: 'التركيز العميق',   icon: '🎯', color: 'border-red-500/30',      accent: '#ef4444' },
+      { id: 'memory',    title: 'الذاكرة السيادية', icon: '🧠', color: 'border-emerald-500/30',  accent: '#10b981' },
+      { id: 'motor',     title: 'التآزر الحركي',    icon: '✍️', color: 'border-rose-500/30',     accent: '#f43f5e' },
+      { id: 'language',  title: 'البناء اللغوي',    icon: '📖', color: 'border-indigo-500/30',   accent: '#6366f1' },
+      { id: 'auditory',  title: 'الرصد السمعي',     icon: '👂', color: 'border-cyan-500/30',     accent: '#06b6d4' },
+      { id: 'executive', title: 'الوظائف العليا',   icon: '⚙️', color: 'border-fuchsia-500/30',  accent: '#d946ef' },
+      { id: 'cognitive', title: 'الإدراك العام',    icon: '💡', color: 'border-amber-500/30',    accent: '#f59e0b' },
+      { id: 'writing',   title: 'التعبير الكتابي',  icon: '🖋️', color: 'border-teal-500/30',    accent: '#14b8a6' },
+      
+      // Full Clinical Diagnostics
+      { id: 'learning_dis', title: 'صعوبات التعلم',   icon: '📚', color: 'border-emerald-500/30', accent: '#10b981' },
+      { id: 'adhd',         title: 'تحديات التركيز (ADHD)', icon: '⚡', color: 'border-rose-500/30',    accent: '#f43f5e' },
+      { id: 'attention_prob', title: 'مشاكل الانتباه',  icon: '🎯', color: 'border-cyan-500/30',    accent: '#06b6d4' },
+      { id: 'memory_prob',  title: 'مشاكل الذاكرة',   icon: '🧠', color: 'border-indigo-500/30',  accent: '#6366f1' },
+      { id: 'perception_prob', title: 'مشاكل الإدراك',  icon: '👁️', color: 'border-purple-500/30',  accent: '#8b5cf6' },
+      { id: 'simple_lang',  title: 'اضطرابات اللغة',   icon: '🗣️', color: 'border-rose-500/30',    accent: '#f43f5e' },
+      
+      // Preliminary Screening (Applying Rule 7 labels)
+      { id: 'autism',       title: 'مستوى الدعم (التوحد)', icon: '🧩', color: 'border-amber-500/30',   accent: '#f59e0b' },
+      { id: 'social_comm',  title: 'التواصل الاجتماعي', icon: '🤝', color: 'border-cyan-500/30',    accent: '#06b6d4' },
+      { id: 'anxiety',      title: 'الرفاهية الوجدانية', icon: '🌿', color: 'border-fuchsia-500/30', accent: '#d946ef' },
     ];
 
-    const actualGames = savedGames ? JSON.parse(savedGames) : {};
     const processedGames = labsConfig.map(lab => {
-      const score = actualGames[lab.id] || 0; // القيمة الحقيقية أو 0
-      let status = "قيد الفحص";
+      const score = scoreMap[lab.id] ?? 0;
+      let status = 'قيد الفحص';
       if (score > 0) {
-        if (score >= 90) status = "متفوق (سيادي)";
-        else if (score >= 75) status = "أداء ممتاز";
-        else if (score >= 50) status = "مستقر";
-        else status = "تحدي حرج";
+        if (score >= 90) status = 'متفوق (سيادي)';
+        else if (score >= 75) status = 'أداء ممتاز';
+        else if (score >= 50) status = 'مستقر';
+        else status = 'تحدي حرج';
       }
       return { ...lab, score, status };
     });
     setChildResults(processedGames);
 
-    // 3. معالجة نتائج الأهل (الرصد السلوكي)
+    // 5. معالجة نتائج الأهل
     if (savedParent) {
-      const raw = JSON.parse(savedParent);
-      const pStats = [
-        { label: 'الانتباه المنزلي', val: Math.round(((raw[1] + raw[7]) / 8) * 100) },
-        { label: 'الضبط الانفعالي', val: Math.round(((raw[3] + raw[8]) / 8) * 100) },
-        { label: 'التواصل الاجتماعي', val: Math.round(((raw[2] + raw[6]) / 8) * 100) },
-        { label: 'المعالجة الحسية', val: Math.round(((raw[4] + raw[10]) / 8) * 100) },
-        { label: 'التنظيم والاستقلال', val: Math.round(((raw[5] + raw[9]) / 8) * 100) },
-      ];
-      setParentStats(pStats);
+      try {
+        const raw = JSON.parse(savedParent);
+        const getPVal = (indices: number[]) => {
+          const vals = indices.map(i => raw[i]).filter(isValid);
+          if (vals.length === 0) return 0;
+          return Math.round((vals.reduce((a, b) => a + b, 0) / (indices.length * 4)) * 100);
+        };
+
+        const pStats = [
+          { label: 'الانتباه المنزلي',     val: getPVal([1, 7]) },
+          { label: 'الضبط الانفعالي',      val: getPVal([3, 8]) },
+          { label: 'التواصل الاجتماعي',    val: getPVal([2, 6]) },
+          { label: 'المعالجة الحسية',      val: getPVal([4, 10]) },
+          { label: 'التنظيم والاستقلال',   val: getPVal([5, 9]) },
+        ];
+        setParentStats(pStats);
+      } catch (e) {
+        console.error("Parent stats parse error", e);
+      }
     }
     setLoading(false);
   }, []);
 
-  // دالة لتوليد التشخيص الذكي بناءً على الأرقام الحقيقية
-  const generateDiagnosis = () => {
-    const memoryScore = childResults.find(l => l.id === 'memory')?.score || 0;
-    const attentionScore = childResults.find(l => l.id === 'attention')?.score || 0;
-    const parentExecutive = parentStats.find(p => p.label === 'التنظيم والاستقلال')?.val || 0;
+  const [aiReport, setAiReport] = useState<any>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-    if (memoryScore > 80 && attentionScore < 50) {
-      return `يظهر البطل ${name} قدرة استثنائية في الذاكرة السيادية، لكن هناك فجوة كبيرة في التركيز العميق. هذا التباين يشير إلى أن الطفل "ذكي جداً لكنه متشتت"، ويحتاج لاستراتيجيات بصرية لتقليل تشتت الانتباه.`;
+  const generateAIReport = async () => {
+    setIsGenerating(true);
+    setApiError(null);
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          childResults,
+          parentStats,
+          studentProfile,
+          sessions,
+          caseStudy: getCaseStudy(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'حدث خطأ أثناء التواصل مع الذكاء الاصطناعي.');
+      setAiReport(data);
+    } catch (err: any) {
+      setApiError(err.message);
+    } finally {
+      setIsGenerating(false);
     }
-    if (parentExecutive < 40) {
-      return `تشير تقارير الأهل إلى تحدي كبير في "التنظيم والاستقلال". بالربط مع أداء المختبرات، يحتاج البطل لبرنامج تعديل سلوك يركز على تقسيم المهام الكبيرة لخطوات صغيرة ملموسة.`;
-    }
-    return `التحليل الأولي يظهر توازناً في القدرات الإدراكية. ننصح بالاستمرار في تطوير مهارات المنطق الرقمي لتعزيز الثقة بالنفس والوصول لمرحلة السيادة التعليمية.`;
   };
+
+  // Compute overall attention score from sessions
+  const totalTabSwitches = sessions.reduce((s, sess) => s + (sess.attention?.tabSwitchCount ?? 0), 0);
+  const totalInactivity  = sessions.reduce((s, sess) => s + (sess.attention?.inactivityCount ?? 0), 0);
+  const totalFrustration = sessions.reduce((s, sess) => s + (sess.emotional?.frustrationEvents ?? 0), 0);
 
   return (
     <main className="min-h-screen bg-[#020617] text-white p-6 md:p-16 relative" dir="rtl">
       <div className="max-w-7xl mx-auto">
+
+        {/* Header */}
         <header className="mb-20 border-b border-white/5 pb-10">
-          <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter text-white">التقرير <span className="text-cyan-400">الفني الحقيقي</span></h1>
-          <p className="text-slate-500 text-2xl mt-4">تحليل البيانات للبطل: <span className="text-white font-bold">{name}</span></p>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter text-white">
+              التقرير <span className="text-cyan-400">الفني الحقيقي</span>
+            </h1>
+            {studentProfile && (
+              <div className="bg-indigo-500/10 border border-indigo-500/30 px-5 py-3 rounded-2xl text-sm">
+                <span className="text-indigo-400 font-mono text-[10px] tracking-widest block mb-1">STUDENT_PROFILE</span>
+                <span className="text-white font-bold">{studentProfile.name}</span>
+                {studentProfile.grade && <span className="text-slate-400 mr-2">| {studentProfile.grade}</span>}
+                {studentProfile.age && <span className="text-slate-400">| {studentProfile.age} سنة</span>}
+              </div>
+            )}
+          </div>
+          <p className="text-slate-500 text-2xl mt-4">
+            تحليل البيانات للبطل: <span className="text-white font-bold">{name}</span>
+          </p>
+
+          {/* Profile flags if relevant */}
+          {studentProfile && (studentProfile.takesMedication || studentProfile.hasHearingIssues !== 'no' || studentProfile.familyADHDOrAutism) && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {studentProfile.takesMedication && (
+                <span className="text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-mono">💊 يتناول أدوية</span>
+              )}
+              {studentProfile.hasHearingIssues !== 'no' && (
+                <span className="text-xs bg-rose-500/10 border border-rose-500/30 text-rose-400 px-3 py-1 rounded-full font-mono">👂 مشاكل سمعية</span>
+              )}
+              {studentProfile.familyADHDOrAutism && (
+                <span className="text-xs bg-purple-500/10 border border-purple-500/30 text-purple-400 px-3 py-1 rounded-full font-mono">🧬 تاريخ عائلي</span>
+              )}
+            </div>
+          )}
         </header>
 
-        {/* القسم 1: نتائج الألعاب الحقيقية */}
+        {/* Accuracy Disclaimer Notice */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="mb-12"
+        >
+          <div className="bg-amber-500/5 border border-amber-500/20 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center gap-6 backdrop-blur-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-amber-500/20 transition-all duration-700" />
+            <div className="scale-90 flex-shrink-0">
+               <AliCharacter name={name} state="idle" variant="compact" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-white mb-2 italic">
+                {language === 'ar' ? 'تنويه لرفع دقة التشخيص' : 'Diagnostic Accuracy Notice'}
+              </h3>
+              <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                {language === 'ar' 
+                  ? 'للحصول على أفضل النتائج العيادية وأكثرها دقة، يجب على البطل الدخول في جميع الاختبارات الفرعية المتوفرة في كل قسم. إكمال جميع المهام يساعد محركاتنا في تقديم تحليل شامل ودقيق للحالة المعرفية والسلوكية.' 
+                  : 'For the best and most accurate clinical results, the hero should enter all available sub-tests in each section. Completing all tasks helps our engines provide a comprehensive analysis of cognitive and behavioral status.'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Live Session Attention Snapshot */}
+        {sessions.length > 0 && (
+          <section className="mb-16">
+            <h2 className="text-2xl font-black italic mb-6 flex items-center gap-3">
+              <span className="w-10 h-10 bg-amber-600 rounded-2xl flex items-center justify-center text-xl">📡</span>
+              مؤشرات الانتباه الحية (من الجلسات)
+            </h2>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: 'مغادرة التركيز', val: totalTabSwitches, icon: '👁️', warn: totalTabSwitches > 5, unit: 'مرة' },
+                { label: 'فترات التوقف',  val: totalInactivity,  icon: '⏸️', warn: totalInactivity > 8,  unit: 'مرة' },
+                { label: 'أحداث إحباط',  val: totalFrustration, icon: '😤', warn: totalFrustration > 3, unit: 'حدث' },
+              ].map(({ label, val, icon, warn, unit }) => (
+                <div key={label} className={`p-6 rounded-[2rem] border text-center ${
+                  warn ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/40 border-slate-700/40'
+                }`}>
+                  <div className="text-4xl mb-2">{icon}</div>
+                  <div className={`text-4xl font-black mb-1 ${warn ? 'text-amber-400' : 'text-white'}`}>{val}</div>
+                  <div className="text-xs text-slate-500 font-mono">{unit} — {label}</div>
+                  {warn && <div className="text-[10px] text-amber-500 mt-2 font-bold">⚠️ يحتاج متابعة</div>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* القسم 1: نتائج المختبرات مع خريطة الصعوبة */}
         <section className="mb-24">
           <h2 className="text-3xl font-black italic mb-10 flex items-center gap-4">
             <span className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl">🤖</span>
             أولاً: أداء البطل في المختبرات الرقمية
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {childResults.map((lab) => (
-              <div key={lab.id} className={`bg-slate-900/40 border-2 ${lab.color} p-8 rounded-[3rem] text-center backdrop-blur-md`}>
-                <span className="text-5xl mb-4 block">{lab.icon}</span>
-                <h3 className="text-xs font-bold text-slate-400 mb-2 italic">{lab.title}</h3>
-                <div className="text-3xl font-black mb-1">{lab.score}%</div>
-                <div className="text-[10px] font-black text-cyan-500 uppercase tracking-tighter">{lab.status}</div>
+            {childResults.map((lab) => {
+              const diffLevel = scoreToDifficultyLevel(lab.score);
+              const skillLevel = getSkillLevelLabel(lab.score);
+              return (
+                <div key={lab.id} className={`bg-slate-900/40 border-2 ${lab.color} p-6 rounded-[3rem] text-center backdrop-blur-md`}>
+                  <span className="text-4xl mb-3 block">{lab.icon}</span>
+                  <h3 className="text-xs font-bold text-slate-400 mb-2 italic">
+                    {t(lab.id as any) || lab.title}
+                  </h3>
+                  <div className="text-3xl font-black mb-1">
+                    {isValid(lab.score) && lab.score > 0 ? `${lab.score}%` : '—'}
+                  </div>
+                  <div className="text-[10px] font-black text-cyan-500 uppercase tracking-tighter mb-2">{lab.status}</div>
+                  {lab.score > 0 && (
+                    <>
+                      <div className="text-[9px] text-slate-500 font-mono mb-1">
+                        {SKILL_LEVEL_LABELS[skillLevel]}
+                      </div>
+                      <DifficultyBar score={lab.score} />
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Difficulty Legend */}
+          <div className="flex flex-wrap gap-4 mt-8 justify-center bg-white/5 p-6 rounded-3xl border border-white/10 italic">
+            {[
+              { level: 'none',     label: 'أداء طبيعي (WNL)', color: 'bg-emerald-500' },
+              { level: 'mild',     label: 'تحدي بسيط (Borderline)',   color: 'bg-amber-400' },
+              { level: 'moderate', label: 'تحدي متوسط (Low)',  color: 'bg-orange-500' },
+              { level: 'severe',   label: 'تحدي شديد (Very Low)',   color: 'bg-rose-600' },
+            ].map(({ label, color }) => (
+              <div key={label} className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <span className={`w-3 h-3 rounded-full ${color} shadow-[0_0_10px_rgba(255,255,255,0.2)]`} />
+                {label}
               </div>
             ))}
           </div>
         </section>
 
-        {/* القسم 2: تقييم الأهل الحقيقي */}
+        {/* القسم 2: تقييم الأهل */}
         <section className="mb-24">
           <h2 className="text-3xl font-black italic mb-10 flex items-center gap-4">
             <span className="w-12 h-12 bg-cyan-600 rounded-2xl flex items-center justify-center text-2xl">👨‍👩‍👧</span>
@@ -121,50 +412,232 @@ export default function RealTimeDiagnosticResults() {
               ))}
             </div>
           ) : (
-            <div className="p-12 border-2 border-dashed border-white/5 rounded-[4rem] text-center text-slate-600 italic">بيانات الأهل غير مكتملة.</div>
+            <div className="p-12 border-2 border-dashed border-white/5 rounded-[4rem] text-center text-slate-600 italic">
+              بيانات الأهل غير مكتملة — يمكن إضافتها من{' '}
+              <Link href="/diagnose/parent-hub" className="text-cyan-600 hover:text-cyan-400">مختبر الرصد الوالدي</Link>.
+            </div>
           )}
         </section>
 
-        {/* القسم 3: التشخيص الدقيق والتحليل */}
-        <section className="mb-24 bg-white/5 border border-white/10 p-12 rounded-[4rem] shadow-2xl">
-          <h2 className="text-4xl font-black italic mb-10 text-cyan-400">ثالثاً: الاستنتاج العيادي والتشخيص 🔬</h2>
-          <div className="text-2xl text-slate-300 leading-relaxed font-light italic">
-            <p className="mb-8">{generateDiagnosis()}</p>
-            <div className="grid md:grid-cols-2 gap-8">
-               <div className="p-8 bg-slate-900/60 rounded-3xl border-r-8 border-cyan-600">
-                  <h4 className="text-white font-black mb-4">نقاط القوة المرصودة:</h4>
-                  <ul className="text-lg space-y-2">
-                    <li>• قدرة عالية على المعالجة البصرية.</li>
-                    <li>• استجابة سريعة في اختبارات المنطق.</li>
-                  </ul>
-               </div>
-               <div className="p-8 bg-slate-900/60 rounded-3xl border-r-8 border-rose-600">
-                  <h4 className="text-white font-black mb-4">تحديات تستوجب التدخل:</h4>
-                  <ul className="text-lg space-y-2">
-                    <li>• تشتت الانتباه عند المثيرات المتعددة.</li>
-                    <li>• صعوبة في كف الاندفاعية أثناء الحل.</li>
-                  </ul>
-               </div>
+        {/* AI Generation Button */}
+        {!aiReport ? (
+          <section className="mb-24 text-center">
+            <div className="flex flex-col items-center gap-6 mb-8">
+               <AliCharacter name={name} state={isGenerating ? 'thinking' : 'idle'} variant="compact" />
+               <button
+                 onClick={generateAIReport}
+                 disabled={isGenerating}
+                 className={`bg-indigo-600 hover:bg-indigo-500 px-12 py-6 rounded-3xl font-black text-2xl shadow-[0_0_40px_rgba(99,102,241,0.4)] transition-all ${isGenerating ? 'opacity-50 animate-pulse' : 'hover:scale-105'}`}
+               >
+                 {isGenerating ? 'جاري التحليل السريري بالذكاء الاصطناعي... ⏳' : 'توليد التقرير السريري بالذكاء الاصطناعي 🧠'}
+               </button>
             </div>
-          </div>
-        </section>
+            {apiError && <p className="text-red-400 mt-4 text-lg">{apiError}</p>}
+          </section>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-10 duration-700">
 
-        {/* القسم 4: الخطة العلاجية */}
-        <section className="bg-cyan-600 text-slate-900 p-14 rounded-[5rem] shadow-2xl">
-          <h2 className="text-4xl font-black italic mb-8 border-b-2 border-black/10 pb-4">رابعاً: خارطة الطريق المقترحة 🚀</h2>
-          <div className="grid md:grid-cols-2 gap-10">
-             <div className="text-xl font-bold italic space-y-4">
-                <p>1. البدء بـ 12 جلسة "تدريب انتباه" لزيادة دقة التركيز.</p>
-                <p>2. تطبيق استراتيجية "التفكير قبل التنفيذ" في المنزل والمدرسة.</p>
-                <p>3. إعادة التقييم بعد إتمام المستوى الأول من المسار العلاجي.</p>
-             </div>
-             <div className="flex items-center justify-center">
-                <Link href="/diagnose/passport" className="px-16 py-8 bg-black text-white text-3xl font-black rounded-full hover:scale-105 transition-all shadow-2xl">
-                   إصدار الجواز التعليمي 🎫
-                </Link>
-             </div>
+            {/* القسم 3: التشخيص الدقيق */}
+            <section className="mb-16 bg-slate-900/60 border border-indigo-500/30 p-12 rounded-[4rem] shadow-2xl backdrop-blur-xl">
+              <h2 className="text-4xl font-black italic mb-10 text-indigo-400 flex items-center gap-4">
+                <span className="text-5xl">🔬</span> ثالثاً: الاستنتاج العيادي والتشخيص (AI)
+              </h2>
+              <p className="text-xl text-slate-300 leading-loose italic bg-slate-950 p-8 rounded-3xl border border-white/5 mb-10">
+                {aiReport.diagnosisSummary}
+              </p>
+
+              {/* Difficulty Types */}
+              {aiReport.difficultyTypes?.length > 0 && (
+                <div className="mb-10">
+                  <h3 className="text-2xl font-black text-rose-400 mb-6">🔎 أنواع الصعوبات المحددة:</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {aiReport.difficultyTypes.map((dt: any, i: number) => (
+                      <div key={i} className="bg-slate-950/80 border border-rose-500/20 rounded-3xl p-5">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-black text-lg">{dt.type}</span>
+                          <span className={`text-xs px-2 py-1 rounded-full font-mono ${
+                            dt.confidence === 'عالي' ? 'bg-rose-500/20 text-rose-400' :
+                            dt.confidence === 'متوسط' ? 'bg-amber-500/20 text-amber-400' :
+                            'bg-slate-700 text-slate-400'
+                          }`}>{dt.confidence}</span>
+                        </div>
+                        <p className="text-slate-400 text-sm">{dt.evidence}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Attention Profile */}
+              {aiReport.attentionProfile && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6 mb-10">
+                  <h3 className="text-amber-400 font-black mb-3 text-xl">📡 تحليل الانتباه:</h3>
+                  <p className="text-slate-300 leading-relaxed">{aiReport.attentionProfile}</p>
+                </div>
+              )}
+
+              {/* Strengths & Challenges */}
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="p-8 bg-slate-950/80 rounded-3xl border-r-8 border-emerald-500">
+                  <h4 className="text-emerald-400 font-black mb-6 text-3xl">نقاط القوة المرصودة:</h4>
+                  <ul className="text-xl space-y-4">
+                    {aiReport.strengths?.map((s: string, i: number) => <li key={i}>✨ {s}</li>)}
+                  </ul>
+                </div>
+                <div className="p-8 bg-slate-950/80 rounded-3xl border-r-8 border-rose-500">
+                  <h4 className="text-rose-400 font-black mb-6 text-3xl">تحديات تستوجب التدخل:</h4>
+                  <ul className="text-xl space-y-4">
+                    {aiReport.challenges?.map((c: string, i: number) => <li key={i}>⚠️ {c}</li>)}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Professional Review Flag (Rule 9) */}
+              {(sessions.some(s => (s.testId.includes('autism') || s.testId.includes('anxiety')) && (s.postAnalysis?.standardScore < 85 || s.rawScore < 50))) && (
+                <div className="mt-12 p-8 bg-rose-500/10 border-2 border-rose-500 border-dashed rounded-3xl text-center">
+                  <div className="text-4xl mb-4">🩺</div>
+                  <h3 className="text-2xl font-black text-white mb-2">تنبيه المراجعة المهنية الإلزامية</h3>
+                  <p className="text-rose-400 font-bold">
+                    تشير النتائج المبدئية في مقاييس التوحد أو الرفاهية الوجدانية إلى وجود مؤشرات تستوجب مراجعة طبيب نفسي أطفال أو أخصائي تشخيص معتمد للتحقق السريري الشامل.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            {/* القسم 4: الاحتياجات الفورية */}
+            {aiReport.immediateNeeds?.length > 0 && (
+              <section className="mb-16 bg-rose-500/10 border border-rose-500/30 p-10 rounded-[3rem]">
+                <h2 className="text-3xl font-black italic mb-6 text-rose-400 flex items-center gap-3">
+                  <span>⚡</span> رابعاً: الاحتياجات الفورية هذا الأسبوع
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {aiReport.immediateNeeds.map((need: string, i: number) => (
+                    <div key={i} className="bg-slate-950/80 border border-rose-500/20 rounded-2xl p-4 flex items-start gap-3">
+                      <span className="text-rose-400 text-xl mt-0.5">🚨</span>
+                      <span className="text-slate-200 text-lg">{need}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* القسم 5: الخطة العلاجية */}
+            <section className="mb-16 bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-500/50 p-14 rounded-[5rem] shadow-[0_0_60px_rgba(99,102,241,0.2)]">
+              <h2 className="text-4xl font-black italic mb-12 text-white flex items-center gap-4">
+                <span className="text-5xl">🚀</span> خامساً: خارطة الطريق المقترحة
+              </h2>
+              <div className="space-y-6">
+                {aiReport.treatmentPlan?.map((plan: any, i: number) => (
+                  <div key={i} className="bg-black/40 p-8 rounded-3xl border-l-4 border-indigo-400 flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="text-indigo-300 font-mono text-sm tracking-widest mb-2">{plan.phase}</div>
+                      <h4 className="text-2xl font-black text-white mb-3">{plan.title}</h4>
+                      <p className="text-slate-400 text-lg leading-relaxed">{plan.description}</p>
+                    </div>
+                    {plan.sessionsPerWeek && (
+                      <div className="flex flex-col items-center justify-center bg-indigo-500/10 border border-indigo-500/30 rounded-2xl px-6 py-4 min-w-[100px]">
+                        <span className="text-3xl font-black text-indigo-300">{plan.sessionsPerWeek}</span>
+                        <span className="text-xs text-slate-500 font-mono mt-1">جلسة/أسبوع</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* القسم 6: دليل الأهل */}
+            {aiReport.parentGuide && (
+              <section className="mb-16 bg-cyan-500/10 border border-cyan-500/30 p-12 rounded-[4rem]">
+                <h2 className="text-3xl font-black italic mb-10 text-cyan-400 flex items-center gap-4">
+                  <span className="text-4xl">👨‍👩‍👧</span> سادساً: دليل الأهل المنزلي
+                </h2>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <h4 className="text-cyan-300 font-black mb-4 text-lg">🏠 أنشطة منزلية مقترحة:</h4>
+                    <ul className="space-y-3">
+                      {aiReport.parentGuide.homeActivities?.map((a: string, i: number) => (
+                        <li key={i} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-3 text-slate-300 text-sm">
+                          ✅ {a}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-emerald-300 font-black mb-4 text-lg">💪 نقاط القوة يجب تعزيزها:</h4>
+                    <ul className="space-y-3">
+                      {aiReport.parentGuide.strengthsToReinforce?.map((s: string, i: number) => (
+                        <li key={i} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-3 text-slate-300 text-sm">
+                          ⭐ {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-amber-300 font-black mb-4 text-lg">⚠️ علامات تحتاج متابعة:</h4>
+                    <ul className="space-y-3">
+                      {aiReport.parentGuide.warningSignsToWatch?.map((w: string, i: number) => (
+                        <li key={i} className="bg-slate-900/60 border border-amber-700/30 rounded-2xl p-3 text-slate-300 text-sm">
+                          🔔 {w}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* القسم 7: توصيات المعلم */}
+            {aiReport.teacherRecommendations?.length > 0 && (
+              <section className="mb-16 bg-violet-500/10 border border-violet-500/30 p-12 rounded-[4rem]">
+                <h2 className="text-3xl font-black italic mb-8 text-violet-400 flex items-center gap-4">
+                  <span className="text-4xl">📋</span> سابعاً: توصيات للمعلم
+                </h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {aiReport.teacherRecommendations.map((rec: string, i: number) => (
+                    <div key={i} className="bg-slate-950/80 border border-violet-500/20 rounded-3xl p-5">
+                      <div className="text-violet-400 text-sm font-mono mb-2">TIP_{String(i + 1).padStart(2, '0')}</div>
+                      <p className="text-slate-300 text-lg leading-relaxed">{rec}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Follow-Up */}
+            <div className="bg-cyan-900/20 p-8 rounded-3xl border border-cyan-500/30 mb-12">
+              <h4 className="text-cyan-400 font-black mb-4 text-2xl">آلية المتابعة 📊</h4>
+              <p className="text-slate-300 text-lg leading-relaxed">{aiReport.followUp}</p>
+            </div>
+
           </div>
-        </section>
+        )}
+
+        {/* Global CTA to Passport & Dashboard (Always Visible) */}
+        <div className="flex flex-col md:flex-row gap-6 mb-8 mt-16 border-t border-white/10 pt-16">
+          <Link href="/diagnose/parent-dashboard" className="flex-1 flex items-center justify-center gap-4 py-8 bg-cyan-600 text-slate-900 text-3xl font-black rounded-[3rem] hover:scale-105 hover:bg-cyan-500 transition-all shadow-[0_0_40px_rgba(6,182,212,0.5)]">
+            لوحة الأهل والخطة العلاجية 📈
+          </Link>
+          <Link href="/diagnose/passport" className="flex-1 flex items-center justify-center gap-4 py-8 bg-indigo-600/30 border-2 border-indigo-500 text-indigo-300 text-3xl font-black rounded-[3rem] hover:scale-105 hover:bg-indigo-600/50 transition-all shadow-xl">
+            الجواز التعليمي 🎫
+          </Link>
+        </div>
+
+        {/* Clinical Disclaimer Footer (Rule 12) */}
+        <footer className="mt-24 mb-12 p-10 bg-slate-950/80 border border-white/5 rounded-[3rem] text-center max-w-5xl mx-auto">
+          <div className="text-xs font-mono tracking-[0.3em] text-slate-500 mb-6 uppercase">CLINICAL_DISCLAIMER_NOTICE</div>
+          <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-3xl mx-auto">
+            تطبيق (بصيرة) هو أداة **مسح مبدئي رقمي** تعتمد على تقنيات الذكاء الاصطناعي والمقاييس النفسية المعربة. 
+            النتائج المعروضة هي "مؤشرات احتمالية" وليست تشخيصاً طبياً نهائياً. لا يمكن استخدام هذا التقرير كبديل عن 
+            التقييم السريري الشامل الذي يجريه فريق مختص (طبيب أعصاب أطفال، أخصائي نفسي، أخصائي تخاطب). 
+            يجب استشارة مختص قبل اتخاذ أي قرارات علاجية أو تربوية بناءً على هذه النتائج.
+          </p>
+          <div className="flex justify-center gap-8 opacity-40 grayscale pointer-events-none">
+            <div className="font-bold text-[8px] border border-white/20 px-2 py-1 rounded">DSM-5 VALIDATED LOGIC</div>
+            <div className="font-bold text-[8px] border border-white/20 px-2 py-1 rounded">WISC-V PROXY ENGINE</div>
+            <div className="font-bold text-[8px] border border-white/20 px-2 py-1 rounded">CTOPP-2 COMPLIANT</div>
+          </div>
+        </footer>
+
       </div>
     </main>
   );
