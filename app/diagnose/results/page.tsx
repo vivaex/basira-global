@@ -15,6 +15,8 @@ import {
 } from '@/lib/studentProfile';
 import AliCharacter from '@/app/components/ui/AliCharacter';
 
+const isValid = (n: any): n is number => typeof n === 'number' && !isNaN(n);
+
 // ────────────────────────────────────────────────
 // DifficultyBar Component
 // ────────────────────────────────────────────────
@@ -79,8 +81,6 @@ export default function RealTimeDiagnosticResults() {
       const n = parseFloat(val);
       return isNaN(n) ? null : n;
     };
-
-    const isValid = (n: any): n is number => typeof n === 'number' && !isNaN(n);
 
     const avg = (...keys: string[]): number => {
       const vals = keys.map(getNum).filter(isValid);

@@ -28,6 +28,7 @@ export default function FocusShieldTest() {
     <ClinicalPlayerEngine
       title="درع التركيز (Focus Shield)"
       category="anxiety_shield"
+      domainId="emotional"
       description="تقييم عيادي للأداء تحت الضغط والقدرة على تصفية المشتتات الانفعالية."
       instruction="المهمة: اضغط على الكرة المضيئة 💎 وتجاهل الأشكال المزعجة التي تظهر وتختفي بسرعة."
       icon="🛡️"

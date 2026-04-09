@@ -25,6 +25,7 @@ export default function FlashDetailTest() {
     <ClinicalPlayerEngine
       title="كاشف التفاصيل (Flash Detail)"
       category="perception_prob_detail"
+      domainId="perception"
       description="تقييم عيادي للانتباه للتفاصيل الدقيقة والقدرة على تمييز الأشياء في وقت وجيز."
       instruction="المهمة: سيظهر عنصر لدقائق معدودة ثم يختفي، حاول الضغط على مكانه الصحيح تماماً."
       icon="🔬"

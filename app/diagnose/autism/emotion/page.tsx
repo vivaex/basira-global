@@ -34,6 +34,7 @@ export default function EmotionExplorerTest() {
     <ClinicalPlayerEngine
       title="مستكشف المشاعر (Face Explorer)"
       category="autism_emotion"
+      domainId="social"
       description="تقييم عيادي للقدرة على تمييز الانفعالات الأساسية من خلال تعابير الوجه."
       instruction="المهمة: ابحث عن الصورة التي تعبر عن المشعر المذكور في الأعلى."
       icon="🎭"

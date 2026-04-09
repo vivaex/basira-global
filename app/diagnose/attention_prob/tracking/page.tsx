@@ -44,6 +44,7 @@ export default function ObjectTrackingTest() {
     <ClinicalPlayerEngine
       title="ملاح المسار (Object Tracking)"
       category="attention_prob_tracking"
+      domainId="attention"
       description="تقييم عيادي للانتباه المستدام وقدرة الدماغ على تتبع الأهداف المتحركة في الفضاء."
       instruction="المهمة: ابقِ تركيزك على الأقمار الصناعية 🛰️، واضغط عليها لجمع البيانات (كلما ضغطت أكثر زادت النتيجة)."
       icon="🛰️"

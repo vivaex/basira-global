@@ -5,7 +5,9 @@ import {
   ResponseRecord,
   DomainResult,
   ComorbidityFlag,
-  StudentProfile
+  StudentProfile,
+  SkillLevel,
+  DifficultyLevel
 } from '../../types';
 import { defaultNormTable } from './norms/norm_tables';
 

@@ -27,6 +27,7 @@ export default function PatternGhostTest() {
     <ClinicalPlayerEngine
       title="خيال الأنماط (Pattern Ghost)"
       category="perception_prob_ghost"
+      domainId="perception"
       description="تقييم عيادي لقدرة الدماغ على مطابقة الأنماط البصرية المعقدة والتمييز بينها."
       instruction="المهمة: انظر للنمط الموجود في المركز وحاول العثور على توأمه المماثل تماماً في الخيارات."
       icon="👻"
@@ -56,10 +57,10 @@ export default function PatternGhostTest() {
                  whileTap={{ scale: 0.9 }}
                  onClick={() => {
                    if (opt === target?.pattern) {
-                     setScore(s => s + 25);
+                     setScore((s: number) => s + 25);
                      play('coin');
                    } else {
-                     setScore(s => Math.max(0, s - 10));
+                     setScore((s: number) => Math.max(0, s - 10));
                      play('click');
                    }
                    spawnRound();

@@ -70,6 +70,7 @@ export default function VisualWordTest() {
     <ClinicalPlayerEngine
       title="الكفاءة البصرية (Visual Efficiency)"
       category="reading_visual_word"
+      domainId="literacy"
       description="تقييم سرعة التعرف على الكلمات (TOWRE) والتمييز بين الكلمات الحقيقية والزائفة."
       instruction="المهمة: ستظهر كلمة بسرعة كبيرة. اضغط 'حقيقية' إذا كانت كلمة موجودة، أو 'زائفة' إذا لم يكن لها معنى."
       icon="👁️"

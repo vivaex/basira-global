@@ -40,6 +40,7 @@ export default function RapidNamingTest() {
     <ClinicalPlayerEngine
       title="تسمية الصور (Rapid Naming)"
       category="simple_lang_naming"
+      domainId="language"
       description="تقييم عيادي للطلاقة اللفظية وسرعة استحضار المسميات اللغوية من الذاكرة."
       instruction="المهمة: قم بتسمية الشيء الذي يظهر في الصورة بسرعة، ثم اضغط على 'التالي'."
       icon="🖼️"

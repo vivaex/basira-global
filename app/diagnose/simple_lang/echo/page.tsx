@@ -26,6 +26,7 @@ export default function EchoMatchTest() {
     <ClinicalPlayerEngine
       title="صدى الحروف (Echo Match)"
       category="simple_lang_echo"
+      domainId="language"
       description="تقييم عيادي للمطاوعة الصوتية والارتباط بين الرموز البصرية والأصوات اللغوية."
       instruction="المهمة: انظر للحرف الكبير في المركز، ثم اختر الحرف المماثل له من الخيارات أدناه."
       icon="🗣️"

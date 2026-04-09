@@ -3,7 +3,7 @@
 
 export type Language = 'ar' | 'en';
 
-export const translations = {
+export const translations: Record<Language, any> = {
   ar: {
     // TopNavbar
     labs: 'المختبرات',
@@ -80,6 +80,9 @@ export const translations = {
     cat_memory_prob: 'مشاكل الذاكرة',
     cat_perception_prob: 'مشاكل الإدراك',
     cat_simple_lang: 'اضطرابات اللغة البسيطة',
+    cat_autism: 'اضطراب طيف توحد',
+    cat_social_comm: 'اضطراب التواصل الاجتماعي',
+    cat_anxiety: 'اضطراب القلق',
 
     // Diagnostic IDs & Slugs
     'cat_auditory/auditory-memory': 'الذاكرة السمعية',
@@ -415,6 +418,7 @@ export const translations = {
     seizure_history: 'Seizure history?',
     takes_medication: 'Takes medication?',
     reading: 'Reading',
+    writing: 'Writing',
     math_prob: 'Math',
     comprehension: 'Comprehension',
     attention_prob: 'Attention',
@@ -444,4 +448,4 @@ export const translations = {
   },
 };
 
-export type TranslationKey = keyof typeof translations.ar;
+export type TranslationKey = keyof typeof translations.ar & string;

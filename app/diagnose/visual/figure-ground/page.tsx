@@ -64,7 +64,7 @@ export default function FigureGroundTest() {
       description="تقييم التمييز بين الشكل والخلفية والبحث البصري المنظم."
       instruction="المهمة: ابحث عن الشكل المطلوب والموجود في أعلى الشاشة داخل مجموعة الأشكال المزدحمة بالأسفل."
       icon="🕵️‍♂️"
-      color="orange"
+      color="amber"
       onComplete={() => {}}
     >
       {({ setScore, recordInteraction, difficulty, gameState }: any) => (

@@ -19,6 +19,7 @@ export default function CalmRegulationTest() {
     <ClinicalPlayerEngine
       title="مختبر الهدوء (Calm Regulation)"
       category="anxiety_calm"
+      domainId="emotional"
       description="تقييم عيادي للقدرة على التنظيم الذاتي والهدوء الفسيولوجي تحت الطلب."
       instruction="المهمة: اجعل الدائرة الزرقاء تتطابق تماماً مع الدائرة الخارجية المضيئة بالضغط المستمر، وحاول الحفاظ على ثباتك."
       icon="🌬️"

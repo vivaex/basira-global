@@ -29,7 +29,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: TranslationKey): string => {
-    return translations[language][key] || translations['ar'][key] || key;
+    const dict = translations[language] as Record<string, string>;
+    const arDict = translations['ar'] as Record<string, string>;
+    return dict[key] || arDict[key] || key;
   };
 
   const dir = language === 'ar' ? 'rtl' : 'ltr';

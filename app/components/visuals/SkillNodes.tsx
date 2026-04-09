@@ -38,7 +38,6 @@ function SkillNode({ position, color, label, speed, url, Geometry }: NodeProps) 
           onPointerOut={() => setHovered(false)}
           onClick={handleClick}
           onPointerDown={handleClick}
-          style={{ cursor: 'pointer' }}
         >
           <Geometry args={[0.6, 16, 100]} />
           <MeshDistortMaterial

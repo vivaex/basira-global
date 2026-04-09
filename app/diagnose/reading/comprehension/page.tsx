@@ -82,6 +82,7 @@ export default function ReadingComprehension() {
     <ClinicalPlayerEngine
       title="فهم المقروء (Comprehension)"
       category="reading_comprehension"
+      domainId="literacy"
       description="تقييم القدرة على استخلاص المعاني المباشرة وغير المباشرة من النص (معايير PIRLS)."
       instruction="المهمة: اقرأ القصة بتركيز، ثم أجب على الأسئلة التي تليها."
       icon="📖"

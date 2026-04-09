@@ -35,6 +35,7 @@ export default function SocialIntentTest() {
     <ClinicalPlayerEngine
       title="المشهد الاجتماعي (Social Intent)"
       category="autism_social"
+      domainId="social"
       description="تقييم عيادي لفهم النوايا الاجتماعية والقواعد السلوكية."
       instruction="المهمة: اقرأ الموقف الاجتماعي واختر التصرف الأنسب."
       icon="🤝"

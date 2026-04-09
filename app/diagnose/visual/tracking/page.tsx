@@ -80,7 +80,7 @@ function TrackingModule({ recordInteraction, difficulty, gameState, finishTest, 
     const hitRadius = Math.max(6.5, 12 - difficulty * 0.8);
 
     if (dist >= hitRadius) {
-       play('error');
+       play('click');
        nextRound({
          isCorrect: false,
          responseValue: 'miss',

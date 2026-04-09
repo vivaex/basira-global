@@ -58,7 +58,7 @@ export default function CaseStudyPage() {
       return {
         ...prev,
         [section]: {
-          ...prev[section],
+          ...(prev[section] as any),
           [field]: value
         }
       };
@@ -104,6 +104,7 @@ export default function CaseStudyPage() {
   };
 
   const YesNoToggle = ({ section, field, label }: { section: keyof CaseStudy, field: string, label: string }) => {
+    if (!formData) return null;
     const sectionData = formData[section] as any;
     const val = (sectionData && sectionData[field]) || 'no';
     return (
@@ -133,7 +134,8 @@ export default function CaseStudyPage() {
     );
   };
 
-  const InputField = ({ section, field, label, type = 'text', placeholder = '' }: any) => {
+  const InputField = ({ section, field, label, type = 'text', placeholder = '' }: { section: keyof CaseStudy, field: string, label: string, type?: string, placeholder?: string }) => {
+    if (!formData) return null;
     const sectionData = formData[section] as any;
     const val = (sectionData && sectionData[field]) || '';
     return (

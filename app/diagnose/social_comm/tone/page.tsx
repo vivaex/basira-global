@@ -32,6 +32,7 @@ export default function ToneRecognitionTest() {
     <ClinicalPlayerEngine
       title="نبرة الصوت (Tone Recognition)"
       category="social_tone"
+      domainId="social"
       description="تقييم عيادي لفهم النبرة، السخرية، والمعاني غير المباشرة في الكلام."
       instruction="المهمة: اقرأ الجملة بتمعن وحاول تخيل نبرة الصوت، ثم اختر الشعور أو الحالة المناسبة."
       icon="🎙️"

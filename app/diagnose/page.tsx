@@ -194,7 +194,7 @@ export default function LabsDashboard() {
                 <div className="scale-75 -ml-8 -mr-4">
                    <AliCharacter 
                      name={profileName || undefined} 
-                     state={missions.every(m => checkMissionProgress(m, allSessions).current >= m.total) ? 'success' : 'idle'} 
+                     state={missions.every(m => checkMissionProgress(m, allSessions).current >= m.requiredCount) ? 'success' : 'idle'} 
                      variant="compact" 
                    />
                 </div>

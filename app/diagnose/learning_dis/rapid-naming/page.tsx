@@ -40,6 +40,7 @@ export default function RapidNamingTest() {
     <ClinicalPlayerEngine
       title="التسمية السريعة (Rapid Naming)"
       category="ld_ran"
+      domainId="cognitive"
       description="تقييم عيادي لسرعة المعالجة والطلاقة الافتتاحية (RAN)."
       instruction="المهمة: قم بتسمية الألوان التي تظهر بسرعة فائقة، واضغط على 'التالي' بعد كل لون."
       icon="🗯️"
