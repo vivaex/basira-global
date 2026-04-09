@@ -4,7 +4,7 @@ import { createBasiraClient } from './lib/supabase';
 /**
  * Middleware to protect routes and manage Supabase sessions.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const supabase = createBasiraClient();
   const { data: { session } } = await supabase.auth.getSession();
 
