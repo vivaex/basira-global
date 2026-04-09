@@ -194,12 +194,18 @@ export default function TestEngine({ testId, category }: { testId: string, categ
         setReactionStartTime(Date.now());
       }, delay);
 
+      if (testId === 'reading-speed') {
+        if (reactionTargetVisible) {
+          startListening();
+        } else {
+          stopListening();
+        }
+      }
+
       // Auto-advance timer (Go/No-Go logic)
-      const timeoutLimit = 3000 + delay; // Exactly 3 seconds wait after stimulus
+      const timeoutLimit = 3000 + delay; 
       const autoPass = setTimeout(() => {
           if (gameState === 'playing' && lastAnsweredRoundRef.current !== round) { 
-             // If No-Go (isTarget: false), timeout is a SUCCESS.
-             // If Go (isTarget: true), timeout is a MISS.
              const isCorrect = currentRound.isTarget === false;
              handleAnswer('timeout', isCorrect);
           }
@@ -208,17 +214,10 @@ export default function TestEngine({ testId, category }: { testId: string, categ
       return () => { 
         clearTimeout(t); 
         clearTimeout(autoPass); 
+        if (testId === 'reading-speed') stopListening();
       };
     }
 
-    if (config.engine === 'REACTION' && testId === 'reading-speed') {
-      // Start listening as soon as the target text is visible
-      if (reactionTargetVisible) {
-        startListening();
-      } else {
-        stopListening();
-      }
-    }
 
     if (config.id === 'reading-speed' && transcript && !feedback) {
       // Normalize and compare

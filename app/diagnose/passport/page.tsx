@@ -69,16 +69,23 @@ const LAB_LABELS: Record<string, { title: string; icon: string }> = {
 // ────────────────────────────────────────────────
 // Main Passport Page
 // ────────────────────────────────────────────────
-
 export default function SovereignPassport() {
   const { t } = useLanguage();
   const [passport, setPassport] = useState<LearningPassport | null>(null);
+  const [name, setName] = useState('البطل');
   const [heroClass, setHeroClass] = useState('بطل صاعد');
   const [topSkill, setTopSkill] = useState('الذكاء العام');
 
   useEffect(() => {
     const p = buildLearningPassport();
     setPassport(p);
+
+    if (p.studentProfile?.name) {
+      setName(p.studentProfile.name);
+    } else {
+      const saved = localStorage.getItem('studentName');
+      if (saved) setName(saved);
+    }
 
     // Determine hero class from best category
     const entries = Object.entries(p.progressByCategory)
@@ -100,7 +107,6 @@ export default function SovereignPassport() {
     }
   }, []);
 
-  const name = passport?.studentProfile?.name ?? localStorage?.getItem?.('studentName') ?? 'البطل';
   const completedLabs = passport ? Object.keys(passport.progressByCategory).length : 0;
   // Overall average calculation
   const allScores = passport
