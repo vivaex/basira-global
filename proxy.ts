@@ -6,6 +6,8 @@ import { createBasiraClient } from './lib/supabase';
  */
 export async function proxy(request: NextRequest) {
   const supabase = createBasiraClient();
+  if (!supabase) return NextResponse.next();
+
   const { data: { session } } = await supabase.auth.getSession();
 
   const url = request.nextUrl.clone();

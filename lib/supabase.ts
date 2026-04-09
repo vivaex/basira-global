@@ -10,7 +10,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // ── Client-side Instance ───────────────────────────────────
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// We guard this to prevent build-time crashes if environment variables are missing
+export const supabase = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null as any; 
 
 /**
  * ── Server-side / Middleware Client Creator ────────────────
@@ -19,6 +22,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * server contexts with appropriate env vars.
  */
 export const createBasiraClient = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null as any;
+  }
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
