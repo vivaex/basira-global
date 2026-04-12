@@ -33,10 +33,12 @@ const LABS = [
   { id: 'cognitive', title: 'الإدراك العام',     icon: '🧠', tag: 'COGNITIVE', color: 'amber' as const },
   { id: 'writing',   title: 'التعبير الكتابي',   icon: '🖋️', tag: 'WRITING',   color: 'cyan' as const },
   { id: 'rapid-naming', title: 'تسمية الألوان (RAN)', icon: '⚡', tag: 'DYSLEXIA', color: 'rose' as const },
+  { id: 'learning_dis/alchemy', title: 'خيمياء الحروف', icon: '🔮', tag: 'DYSLEXIA', color: 'emerald' as const },
+  { id: 'social/social-recognition', title: 'تمييز المشاعر', icon: '🤖', tag: 'SOCIAL', color: 'amber' as const },
+  { id: 'social/empathy-scenarios', title: 'مواقف التعاطف', icon: '🤝', tag: 'SOCIAL', color: 'amber' as const },
 ];
 
 const FULL_DIAGNOSTICS_LABS = [
-  { id: 'learning_dis',  title: 'صعوبات التعلم', icon: '📚', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'adhd',          title: 'اضطراب ADHD',  icon: '⚡', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'attention',     title: 'مشاكل الانتباه', icon: '🎯', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'auditory/auditory-memory', title: 'مشاكل الذاكرة', icon: '🧠', tag: 'CLINICAL', color: 'rose' as const },

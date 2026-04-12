@@ -69,12 +69,15 @@ export const translations: Record<Language, any> = {
     clinical_intelligence: 'تحليل الذكاء السريري',
 
     // New Professional Sectors
-    sector_interactive: 'المختبرات التفاعلية',
+    sector_interactive: 'صعوبات التعلم',
     sector_clinical: 'قطاع التشخيص الإكلينيكي الكامل',
     sector_preliminary: 'قطاع المؤشرات والتشخيص المبدئي',
     
     // Full Clinical Categories
     cat_learning_dis: 'صعوبات التعلم',
+    'cat_learning_dis/alchemy': 'خيمياء الحروف',
+    'cat_social/social-recognition': 'تمييز المشاعر',
+    'cat_social/empathy-scenarios': 'مواقف التعاطف',
     cat_adhd: 'اضطراب ADHD',
     cat_attention_prob: 'مشاكل الانتباه',
     cat_memory_prob: 'مشاكل الذاكرة',
@@ -290,12 +293,15 @@ export const translations: Record<Language, any> = {
     clinical_intelligence: 'Clinical Intelligence',
 
     // New Professional Sectors
-    sector_interactive: 'Interactive Labs',
+    sector_interactive: 'Learning Difficulties',
     sector_clinical: 'Full Clinical Diagnosis',
     sector_preliminary: 'Discovery & Screening',
     
     // Full Clinical Categories
     cat_learning_dis: 'Learning Disabilities',
+    'cat_learning_dis/alchemy': 'Letter Alchemy',
+    'cat_social/social-recognition': 'Emotion Recognition',
+    'cat_social/empathy-scenarios': 'Empathy Scenarios',
     cat_adhd: 'ADHD Disorder',
     cat_attention_prob: 'Attention Issues',
     cat_memory_prob: 'Memory Issues',

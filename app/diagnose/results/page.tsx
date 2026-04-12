@@ -123,12 +123,11 @@ export default function RealTimeDiagnosticResults() {
     const adhdClinicalScore        = avg('adhd_speed_trapScore', 'adhd_cptScore', 'adhdScore');
     const autismClinicalScore      = avg('autism_emotionScore', 'autism_socialScore', 'autismScore');
     const memoryProbClinicalScore  = avg('memory_prob_sequenceScore', 'memory_prob_digitScore', 'memory_probScore');
-    const ldClinicalScore          = avg('ld_alchemyScore', 'ld_ranScore', 'learning_disScore');
-    const anxietyClinicalScore     = avg('anxiety_shieldScore', 'anxiety_calmScore', 'anxietyScore');
-    const socialCommClinicalScore  = avg('social_navigatorScore', 'social_toneScore', 'social_commScore');
-    const attentionProbClinicalScore = avg('attention_prob_searchScore', 'attention_prob_trackingScore', 'attention_probScore');
-    const perceptionProbClinicalScore = avg('perception_prob_ghostScore', 'perception_prob_detailScore', 'perception_probScore');
-    const simpleLangClinicalScore  = avg('simple_lang_echoScore', 'simple_lang_namingScore', 'simple_langScore');
+    const ldAlchemyScore           = getNum('ld_alchemyScore');
+    const socialRecScore           = getNum('autism_emotionScore'); // Match what was in ldClinicalScore approx
+    const empathyScore             = getNum('social_navigatorScore');
+
+    const adhdClinicalScore        = avg('adhd_speed_trapScore', 'adhd_cptScore', 'adhdScore');
 
     const scoreMap: Record<string, number> = {
       math: mathScore, visual: visualScore, attention: attentionScore,
@@ -137,15 +136,10 @@ export default function RealTimeDiagnosticResults() {
       cognitive: cognitiveScore, writing: writingScore,
       
       // Full Clinical Diagnostics
-      learning_dis: ldClinicalScore,
+      'learning_dis/alchemy': ldAlchemyScore || 0,
+      'social/social-recognition': socialRecScore || 0,
+      'social/empathy-scenarios': empathyScore || 0,
       adhd: adhdClinicalScore,
-      attention_prob: attentionProbClinicalScore,
-      memory_prob: memoryProbClinicalScore,
-      perception_prob: perceptionProbClinicalScore,
-      simple_lang: simpleLangClinicalScore,
-      autism: autismClinicalScore,
-      social_comm: socialCommClinicalScore,
-      anxiety: anxietyClinicalScore,
     };
 
     // Also pull from saved sessions if score is 0
@@ -167,9 +161,11 @@ export default function RealTimeDiagnosticResults() {
       { id: 'executive', title: 'الوظائف العليا',   icon: '⚙️', color: 'border-fuchsia-500/30',  accent: '#d946ef' },
       { id: 'cognitive', title: 'الإدراك العام',    icon: '💡', color: 'border-amber-500/30',    accent: '#f59e0b' },
       { id: 'writing',   title: 'التعبير الكتابي',  icon: '🖋️', color: 'border-teal-500/30',    accent: '#14b8a6' },
+      { id: 'learning_dis/alchemy', title: 'خيمياء الحروف', icon: '🔮', color: 'border-emerald-500/30', accent: '#10b981' },
+      { id: 'social/social-recognition', title: 'تمييز المشاعر', icon: '🤖', color: 'border-indigo-500/30', accent: '#6366f1' },
+      { id: 'social/empathy-scenarios', title: 'مواقف التعاطف', icon: '🤝', color: 'border-amber-500/30', accent: '#f59e0b' },
       
       // Full Clinical Diagnostics
-      { id: 'learning_dis', title: 'صعوبات التعلم',   icon: '📚', color: 'border-emerald-500/30', accent: '#10b981' },
       { id: 'adhd',         title: 'تحديات التركيز (ADHD)', icon: '⚡', color: 'border-rose-500/30',    accent: '#f43f5e' },
       { id: 'attention_prob', title: 'مشاكل الانتباه',  icon: '🎯', color: 'border-cyan-500/30',    accent: '#06b6d4' },
       { id: 'memory_prob',  title: 'مشاكل الذاكرة',   icon: '🧠', color: 'border-indigo-500/30',  accent: '#6366f1' },
