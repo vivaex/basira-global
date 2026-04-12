@@ -51,7 +51,7 @@ export default function ObjectTrackingTest() {
       color="indigo"
       onComplete={() => {}}
     >
-      {({ setScore, gameState }) => (
+      {({ setScore, nextRound, gameState }: any) => (
         <div className="w-full h-full relative overflow-hidden bg-slate-950/50 rounded-[4rem] border border-white/5 shadow-2xl">
            {targets.map(t => (
              <motion.button
@@ -60,8 +60,9 @@ export default function ObjectTrackingTest() {
                whileTap={{ scale: 0.8 }}
                style={{ left: `${t.x}%`, top: `${t.y}%`, position: 'absolute' }}
                onClick={() => {
-                 setScore(s => s + 10);
+                 setScore((s: number) => s + 10);
                  play('coin');
+                 nextRound(true);
                }}
                className="w-20 h-20 flex items-center justify-center text-4xl cursor-pointer z-20"
              >

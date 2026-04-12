@@ -35,7 +35,7 @@ export default function FocusShieldTest() {
       color="rose"
       onComplete={() => {}}
     >
-      {({ setScore, gameState }) => (
+      {({ setScore, nextRound, gameState }: any) => (
         <div className="w-full h-full relative overflow-hidden bg-black/40 rounded-[3rem]">
            {/* Visual Pressure: Flashing backgrounds */}
            <motion.div 
@@ -55,9 +55,10 @@ export default function FocusShieldTest() {
                  style={{ left: `${target.x}%`, top: `${target.y}%` }}
                  className="absolute w-20 h-20 bg-rose-500 rounded-full flex items-center justify-center text-4xl shadow-[0_0_30px_rgba(244,63,94,0.6)] z-20"
                  onClick={() => {
-                   setScore(s => s + 20);
+                   setScore((s: number) => s + 20);
                    play('coin');
                    setTarget(null);
+                   nextRound(true);
                    setTimeout(spawnTarget, 400);
                  }}
                >

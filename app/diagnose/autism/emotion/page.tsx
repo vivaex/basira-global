@@ -41,7 +41,7 @@ export default function EmotionExplorerTest() {
       color="amber"
       onComplete={() => {}}
     >
-      {({ setScore, gameState }) => (
+      {({ setScore, nextRound, gameState }: any) => (
         <div className="w-full flex flex-col items-center">
            <AnimatePresence mode="wait">
              {target && (
@@ -63,13 +63,15 @@ export default function EmotionExplorerTest() {
                  whileHover={{ scale: 1.1, rotate: 5 }}
                  whileTap={{ scale: 0.9 }}
                  onClick={() => {
-                   if (opt.emotion === target?.emotion) {
-                     setScore(s => s + 20);
+                   const isCorrect = opt.emotion === target?.emotion;
+                   if (isCorrect) {
+                     setScore((s: number) => s + 20);
                      play('coin');
                    } else {
-                     setScore(s => Math.max(0, s - 10));
+                     setScore((s: number) => Math.max(0, s - 10));
                      play('click');
                    }
+                   nextRound(isCorrect);
                    spawnRound();
                  }}
                  className="w-32 h-32 md:w-44 md:h-44 bg-slate-900 border-2 border-white/10 rounded-[2.5rem] flex items-center justify-center text-7xl md:text-8xl shadow-xl transition-all hover:border-amber-500/50"

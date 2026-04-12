@@ -42,7 +42,7 @@ export default function SocialIntentTest() {
       color="indigo"
       onComplete={() => {}}
     >
-      {({ setScore, gameState }) => (
+      {({ setScore, nextRound, gameState }: any) => (
         <div className="w-full max-w-4xl px-4 text-center">
            <AnimatePresence mode="wait">
              {target && (
@@ -66,13 +66,15 @@ export default function SocialIntentTest() {
                   whileHover={{ scale: 1.02, x: 10 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
-                     if (i === target.correct) {
-                       setScore(s => s + 35);
+                     const isCorrect = i === target.correct;
+                     if (isCorrect) {
+                       setScore((s: number) => s + 35);
                        play('success');
                      } else {
-                       setScore(s => Math.max(0, s - 10));
+                       setScore((s: number) => Math.max(0, s - 10));
                        play('click');
                      }
+                     nextRound(isCorrect);
                      spawnRound();
                   }}
                   className="p-6 bg-slate-900 border-2 border-white/5 hover:border-indigo-500/50 rounded-2xl text-xl font-bold text-white text-right"

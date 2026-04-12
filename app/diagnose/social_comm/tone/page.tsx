@@ -39,7 +39,7 @@ export default function ToneRecognitionTest() {
       color="rose"
       onComplete={() => {}}
     >
-      {({ setScore, gameState }) => (
+      {({ setScore, nextRound, gameState }: any) => (
         <div className="w-full flex flex-col items-center">
            <AnimatePresence mode="wait">
              {target && (
@@ -63,13 +63,15 @@ export default function ToneRecognitionTest() {
                   whileHover={{ scale: 1.1, rotate: i % 2 === 0 ? 3 : -3 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
-                    if (opt === target?.tone) {
-                      setScore(s => s + 35);
+                    const isCorrect = opt === target?.tone;
+                    if (isCorrect) {
+                      setScore((s: number) => s + 35);
                       play('coin');
                     } else {
-                      setScore(s => Math.max(0, s - 10));
+                      setScore((s: number) => Math.max(0, s - 10));
                       play('click');
                     }
+                    nextRound(isCorrect);
                     spawnRound();
                   }}
                   className="px-12 py-6 bg-white/5 border border-white/10 rounded-3xl text-2xl font-black text-white hover:bg-rose-500 hover:text-black transition-all shadow-xl"

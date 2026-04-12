@@ -37,7 +37,7 @@ export default function SocialRecognitionTest() {
     trialStartRef.current = Date.now();
   }, []);
 
-  const handleAnswer = (choice: string, recordInteraction: any) => {
+  const handleAnswer = (choice: string, recordInteraction: any, difficulty: number) => {
     if (!current) return;
     
     const isCorrect = choice === current.label;
@@ -57,7 +57,7 @@ export default function SocialRecognitionTest() {
       }
     });
 
-    setTimeout(() => spawnTrial(1), 1000);
+    setTimeout(() => spawnTrial(difficulty), 1000);
   };
 
   return (
@@ -71,7 +71,7 @@ export default function SocialRecognitionTest() {
       color="pink"
       onComplete={() => {}}
     >
-      {({ recordInteraction, difficulty, gameState }) => (
+      {({ recordInteraction, difficulty, gameState }: any) => (
         <div className="w-full flex flex-col items-center">
           
           <div className="relative mb-16 h-64 flex items-center justify-center">
@@ -105,7 +105,7 @@ export default function SocialRecognitionTest() {
                 key={i}
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handleAnswer(opt, recordInteraction)}
+                onClick={() => handleAnswer(opt, recordInteraction, difficulty)}
                 className="bg-slate-900 border-4 border-slate-800 hover:border-pink-500 rounded-[2.5rem] p-10 text-4xl font-black text-white transition-all shadow-xl hover:shadow-pink-500/20"
               >
                 {opt}

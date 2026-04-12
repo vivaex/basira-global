@@ -1,127 +1,156 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ClinicalPlayerEngine from '@/app/components/ui/ClinicalPlayerEngine';
 import { useSound } from '@/hooks/useSound';
-import DiscriminationGrid from '@/app/components/visuals/DiscriminationGrid';
-import NeuralNetwork from '@/app/components/visuals/NeuralNetwork';
 
-type SymbolType = 'torus' | 'octahedron' | 'dodecahedron' | 'icosahedron' | 'sphere';
-const SYMBOLS: SymbolType[] = ['torus', 'octahedron', 'dodecahedron', 'icosahedron', 'sphere'];
-const COLORS = ['#3b82f6', '#a855f7', '#22d3ee', '#10b981', '#f43f5e', '#f59e0b'];
+// Clinical Stimuli: Letters and symbols prone to flipping (b/d, p/q, 6/9)
+const STIMULI = [
+  { char: 'b', flips: ['d', 'p', 'q'], category: 'letter' },
+  { char: 'p', flips: ['q', 'b', 'd'], category: 'letter' },
+  { char: 'd', flips: ['b', 'q', 'p'], category: 'letter' },
+  { char: 'q', flips: ['p', 'd', 'b'], category: 'letter' },
+  { char: '6', flips: ['9'], category: 'number' },
+  { char: '9', flips: ['6'], category: 'number' },
+  { char: 'm', flips: ['w'], category: 'letter' },
+  { char: 'w', flips: ['m'], category: 'letter' },
+  { char: 'u', flips: ['n'], category: 'letter' },
+  { char: 'n', flips: ['u'], category: 'letter' },
+  { char: 'س', flips: ['ش'], category: 'arabic' },
+  { char: 'ر', flips: ['ز'], category: 'arabic' },
+  { char: 'د', flips: ['ذ'], category: 'arabic' },
+  { char: 'ح', flips: ['ج', 'خ'], category: 'arabic' },
+];
 
 export default function VisualDiscriminationTest() {
   const { play } = useSound();
-  const [trialData, setTrialData] = useState<{
-    targets: Array<{ type: SymbolType, color: string }>;
-    options: Array<{ type: SymbolType, color: string, isMatch: boolean }>;
+  const [trial, setTrial] = useState<{
+    target: string;
+    options: { char: string; isMatch: boolean; id: number }[];
   } | null>(null);
-  
+  const [feedback, setFeedback] = useState<'none' | 'correct' | 'wrong'>('none');
   const trialStartTime = useRef<number>(0);
 
   const generateTrial = useCallback((difficulty: number) => {
-    // Standard WISC-V Symbol Search Complexity
-    const numTargets = difficulty < 4 ? 1 : 2;
+    // Pick a random stimulus
+    const s = STIMULI[Math.floor(Math.random() * STIMULI.length)];
+    const target = s.char;
+    
+    // Difficulty 1-10: More options and more similar distractors
     const numOptions = Math.min(6, 3 + Math.floor(difficulty / 2));
     
-    const targets = Array.from({ length: numTargets }).map(() => ({
-      type: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      color: COLORS[Math.floor(Math.random() * COLORS.length)]
-    }));
+    let opts: { char: string; isMatch: boolean; id: number }[] = [
+      { char: target, isMatch: true, id: Math.random() }
+    ];
 
-    const matchIdx = Math.floor(Math.random() * numOptions);
-    const options = Array.from({ length: numOptions }).map((_, i) => {
-      if (i === matchIdx) return { ...targets[Math.floor(Math.random() * targets.length)], isMatch: true };
-      
-      let type: SymbolType, color: string;
-      do {
-        type = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-        color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      } while (targets.some(t => t.type === type && t.color === color));
-      
-      return { type, color, isMatch: false };
+    // Add flips as distractors first
+    const distractors = [...s.flips];
+    while (opts.length < numOptions) {
+      if (distractors.length > 0) {
+        const char = distractors.shift()!;
+        opts.push({ char, isMatch: false, id: Math.random() });
+      } else {
+        // Add other random stimuli
+        const other = STIMULI[Math.floor(Math.random() * STIMULI.length)].char;
+        if (!opts.find(o => o.char === other)) {
+          opts.push({ char: other, isMatch: false, id: Math.random() });
+        }
+      }
+    }
+
+    setTrial({
+      target,
+      options: opts.sort(() => Math.random() - 0.5)
     });
-
-    setTrialData({ targets, options });
+    setFeedback('none');
     trialStartTime.current = performance.now();
   }, []);
 
-  const handleSelect = (isMatch: boolean, recordInteraction: any, difficulty: number) => {
-    if (!trialData) return;
-    
-    const now = performance.now();
-    const rt = now - trialStartTime.current;
-    
-    recordInteraction({
-      isCorrect: isMatch,
-      timestampDisplayed: trialStartTime.current,
-      timestampResponded: now,
-      responseDuration: rt,
-      itemDifficulty: difficulty,
-      responseValue: isMatch ? 'hit' : 'miss',
-      metadata: { numTargets: trialData.targets.length, numOptions: trialData.options.length }
-    });
+  const handleSelect = (option: any, nextRound: any, setScore: any, difficulty: number) => {
+    if (feedback !== 'none') return;
 
-    if (isMatch) {
+    const isCorrect = option.isMatch;
+    const now = performance.now();
+    const duration = now - trialStartTime.current;
+
+    if (isCorrect) {
+      setScore((s: number) => s + 50);
       play('success');
+      setFeedback('correct');
     } else {
       play('click');
+      setFeedback('wrong');
     }
 
-    // Standard Processing Speed feedback: keep pulse minimal to maintain flow
-    setTimeout(() => generateTrial(difficulty), 400);
+    nextRound(isCorrect);
+    setTimeout(() => generateTrial(difficulty), 800);
   };
 
   return (
     <ClinicalPlayerEngine
-      title="التمييز البصري وسرعة المعالجة (Symbol Search)"
+      title="التمييز البصري (Visual Discrimination)"
       category="visual_discrimination"
-      domainId="visual"
-      description="قياس سرعة المعالجة البصرية والتمييز بين الأشكال المعقدة (WISC-V)."
-      instruction="المهمة: ابحث عن أحد الرموز في المجموعة 'العلوية' المرجعية داخل المجموعة 'السفلية' واضغط عليه بأسرع ما يمكن."
-      icon="⚡"
+      domainId="visual-processing"
+      description="تقييم عيادي للقدرة على تمييز الاختلافات الدقيقة في الحروف والرموز (WISC-PSI)."
+      instruction="المهمة: انظر إلى الحرف الملون في الأعلى، ثم اختر الحرف المطابق له تماماً من المجموعة في الأسفل."
+      icon="🔍"
       color="cyan"
       onComplete={() => {}}
     >
-      {({ recordInteraction, difficulty, gameState }: any) => (
-        <div className="w-full h-full relative">
-           {/* 3D Scene Background & Game Layer */}
-           <div className="absolute inset-x-0 top-0 h-[48rem] bg-slate-950/40 rounded-[5rem] overflow-hidden border-2 border-white/5 z-0">
-              <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-                <ambientLight intensity={0.6} />
-                <pointLight position={[10, 10, 10]} intensity={1.5} />
-                <Suspense fallback={null}>
-                    <NeuralNetwork count={40} />
-                    {trialData && gameState === 'playing' && (
-                      <DiscriminationGrid
-                        targets={trialData.targets}
-                        options={trialData.options}
-                        onSelect={(isMatch) => handleSelect(isMatch, recordInteraction, difficulty)}
-                        difficulty={difficulty / 10}
-                      />
-                    )}
-                </Suspense>
-              </Canvas>
-              
-              {/* Overlay for Target Group Labelling (Ambient UI) */}
-              <div className="absolute top-[32%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none opacity-50">
-                 <div className="text-cyan-500 font-bold text-[0.6rem] uppercase tracking-[0.4em]">Reference_Set</div>
-                 <div className="w-[30rem] h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-              </div>
+      {({ setScore, nextRound, difficulty, gameState }: any) => (
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          
+          <AnimatePresence mode="wait">
+            {trial && gameState === 'playing' && (
+              <div className="w-full max-w-4xl flex flex-col items-center">
+                
+                {/* Reference Target */}
+                <motion.div
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="mb-20 p-10 bg-slate-900 border-4 border-cyan-500 rounded-[3rem] shadow-[0_0_50px_rgba(6,182,212,0.2)]"
+                >
+                  <span className="text-[10rem] font-black text-cyan-400 leading-none">
+                    {trial.target}
+                  </span>
+                </motion.div>
 
-              <div className="absolute top-[68%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none opacity-50">
-                 <div className="text-slate-600 font-bold text-[0.6rem] uppercase tracking-[0.4em]">Action_Set</div>
-                 <div className="w-[45rem] h-[1px] bg-gradient-to-r from-transparent via-slate-500/10 to-transparent" />
-              </div>
-           </div>
+                {/* Grid Divider */}
+                <div className="w-full flex items-center gap-4 mb-20 opacity-30">
+                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white" />
+                   <div className="text-[0.6rem] font-black uppercase tracking-[0.5em] text-white">Select matching character</div>
+                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white" />
+                </div>
 
-           <GameTrigger gameState={gameState} onStart={() => generateTrial(difficulty)} />
-           
-           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-700 text-[0.6rem] font-bold uppercase tracking-[0.4em] italic text-center w-full">
-             WISC-PSI standard Integration | 3D Space processing v4.1
-           </div>
+                {/* Options Grid */}
+                <div className="flex gap-6 flex-wrap justify-center w-full">
+                   {trial.options.map((opt) => (
+                     <motion.button
+                       key={opt.id}
+                       whileHover={{ scale: 1.1, y: -5 }}
+                       whileTap={{ scale: 0.9 }}
+                       onClick={() => handleSelect(opt, nextRound, setScore, difficulty)}
+                       className={`w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] border-4 flex items-center justify-center text-8xl font-black transition-all shadow-2xl ${
+                         feedback === 'correct' && opt.isMatch ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.3)]' :
+                         feedback === 'wrong' && !opt.isMatch ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 opacity-50' :
+                         'bg-slate-900 border-white/5 text-white hover:border-cyan-500/50'
+                       }`}
+                     >
+                        {opt.char}
+                     </motion.button>
+                   ))}
+                </div>
+
+              </div>
+            )}
+          </AnimatePresence>
+
+          <GameTrigger gameState={gameState} onStart={() => generateTrial(difficulty)} />
+
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-700 text-[0.6rem] font-black uppercase tracking-[0.4em] italic text-center w-full">
+            NEURAL SCAN: PSI_ALPHA_MATCH // V4.2 Standardized
+          </div>
         </div>
       )}
     </ClinicalPlayerEngine>
