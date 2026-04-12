@@ -17,6 +17,8 @@
     "@supabase/supabase-js": "^2.101.1",
     "bcryptjs": "^3.0.2",
     "framer-motion": "^12.38.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "maath": "^0.10.8",
     "next": "16.2.1",
     "next-auth": "^4.24.11",

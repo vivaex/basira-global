@@ -14,6 +14,7 @@ import {
   getCaseStudy,
 } from '@/lib/studentProfile';
 import AliCharacter from '@/app/components/ui/AliCharacter';
+import PDFReportButton from '@/app/components/ui/PDFReportButton';
 
 const isValid = (n: any): n is number => typeof n === 'number' && !isNaN(n);
 
@@ -619,8 +620,74 @@ export default function RealTimeDiagnosticResults() {
           </div>
         )}
 
+        {/* ═══ PDF EXPORT SECTION ═══ */}
+        <section className="mb-8 mt-16 border-t border-white/10 pt-12">
+          <h2 className="text-2xl font-black italic mb-6 flex items-center gap-3">
+            <span className="w-10 h-10 bg-rose-700 rounded-2xl flex items-center justify-center text-xl">📄</span>
+            تصدير التقرير السريري
+          </h2>
+          <div className="bg-slate-900/40 border border-rose-500/20 rounded-[2.5rem] p-8">
+            <p className="text-slate-400 text-lg mb-6 leading-relaxed">
+              يمكنك تصدير التقرير الكامل كملف <strong className="text-white">PDF احترافي</strong> لمشاركته مع{' '}
+              <span className="text-rose-400">الطبيب</span> أو{' '}
+              <span className="text-violet-400">المعلم</span> أو{' '}
+              <span className="text-cyan-400">الأخصائي</span>.
+            </p>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+              <PDFReportButton
+                data={{
+                  childName: name,
+                  childAge: studentProfile?.age,
+                  childGrade: studentProfile?.grade,
+                  gender: studentProfile?.gender,
+                  domainScores: childResults,
+                  parentStats,
+                  teacherFormScore: typeof window !== 'undefined' ? (localStorage.getItem('teacherFormScore') ? parseInt(localStorage.getItem('teacherFormScore')!) : null) : null,
+                  digitBackwardScore: typeof window !== 'undefined' ? (localStorage.getItem('digitBackwardScore') ? parseInt(localStorage.getItem('digitBackwardScore')!) : null) : null,
+                  digitBackwardMaxSpan: typeof window !== 'undefined' ? (localStorage.getItem('digitBackwardMaxSpan') ? parseInt(localStorage.getItem('digitBackwardMaxSpan')!) : null) : null,
+                  aiReport: aiReport,
+                  professionalReviewRequired: sessions.some(s =>
+                    (s.testId.includes('autism') || s.testId.includes('anxiety')) &&
+                    (s.postAnalysis?.standardScore < 85 || s.rawScore < 50)
+                  ),
+                }}
+              />
+              <div className="text-slate-500 text-xs font-mono leading-loose">
+                <div>✅ يتضمن: البيانات الشخصية + نتائج المجالات</div>
+                <div>✅ تقرير الذكاء الاصطناعي (إن وُجد) + تقييم الأهل</div>
+                <div>✅ رقم مرجعي فريد لكل تقرير</div>
+              </div>
+            </div>
+          </div>
+
+          {/* روابط سريعة للأدوات الإضافية */}
+          <div className="grid md:grid-cols-3 gap-4 mt-6">
+            <Link href="/diagnose/memory-test/digit-backward"
+              className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 hover:bg-indigo-500/20 transition-all group">
+              <div className="text-2xl mb-2">🧠</div>
+              <div className="font-bold text-indigo-400 text-sm">الأرقام المعكوسة</div>
+              <div className="text-slate-500 text-xs mt-1">WISC-V Digit Span Backward</div>
+              <div className="text-indigo-300 text-xs mt-2 group-hover:translate-x-1 transition-transform">→ ابدأ الاختبار</div>
+            </Link>
+            <Link href="/diagnose/teacher-form"
+              className="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-4 hover:bg-violet-500/20 transition-all group">
+              <div className="text-2xl mb-2">📋</div>
+              <div className="font-bold text-violet-400 text-sm">استبيان المعلم</div>
+              <div className="text-slate-500 text-xs mt-1">Conners-3 Teacher Form</div>
+              <div className="text-violet-300 text-xs mt-2 group-hover:translate-x-1 transition-transform">→ للمعلم / المعلمة</div>
+            </Link>
+            <Link href="/diagnose/profile/developmental-history"
+              className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 hover:bg-cyan-500/20 transition-all group">
+              <div className="text-2xl mb-2">🧬</div>
+              <div className="font-bold text-cyan-400 text-sm">التاريخ التطوري</div>
+              <div className="text-slate-500 text-xs mt-1">DSM-5-TR Developmental History</div>
+              <div className="text-cyan-300 text-xs mt-2 group-hover:translate-x-1 transition-transform">→ أضف بيانات النمو</div>
+            </Link>
+          </div>
+        </section>
+
         {/* Global CTA to Passport & Dashboard (Always Visible) */}
-        <div className="flex flex-col md:flex-row gap-6 mb-8 mt-16 border-t border-white/10 pt-16">
+        <div className="flex flex-col md:flex-row gap-6 mb-8">
           <Link href="/diagnose/parent-dashboard" className="flex-1 flex items-center justify-center gap-4 py-8 bg-cyan-600 text-slate-900 text-3xl font-black rounded-[3rem] hover:scale-105 hover:bg-cyan-500 transition-all shadow-[0_0_40px_rgba(6,182,212,0.5)]">
             لوحة الأهل والخطة العلاجية 📈
           </Link>
