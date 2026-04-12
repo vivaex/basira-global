@@ -326,7 +326,7 @@ export default function LabsDashboard() {
                                <div className="flex items-center gap-6">
                                   <span className="text-5xl group-hover:scale-110 transition-transform">{tool.icon}</span>
                                   <div className="text-right">
-                                     <h4 className="text-white font-black text-lg italic mb-1">{t(tool.id.includes('dashboard') ? 'clinician_hub' : tool.id.includes('teacher') ? 'teacher_form_short' : 'dev_history_short')}</h4>
+                                     <h4 className="text-white font-black text-lg italic mb-1">{tool.title}</h4>
                                      <span className="text-[0.6rem] font-mono text-violet-400/60 uppercase tracking-widest">{tool.tag}</span>
                                   </div>
                                </div>
