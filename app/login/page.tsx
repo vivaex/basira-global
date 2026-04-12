@@ -8,17 +8,6 @@ import { authService } from '../../lib/auth-service';
 import { syncAllData } from '../../lib/storage';
 import { StableFieldInput as FieldInput } from '../components/ui/FormElements';
 
-export const metadata = {
-  title: 'تسجيل الدخول | بَصيرة',
-  description: 'سجل دخولك إلى منظومة بصيرة للتشخيص الذكي ومتابعة التقارير الطبية.',
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 // --- Stable Form Component ---
 function LoginForm({ 

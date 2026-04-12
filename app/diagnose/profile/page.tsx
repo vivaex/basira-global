@@ -1,16 +1,5 @@
 'use client';
 
-export const metadata = {
-  title: 'الملف الشخصي | بَصيرة',
-  description: 'قم بإعداد ملفك الشخصي لبدء رحلة التشخيص الذكي.',
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

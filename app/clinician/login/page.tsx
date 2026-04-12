@@ -5,17 +5,6 @@ import { motion } from 'framer-motion';
 import { StableFieldInput as FieldInput } from '@/app/components/ui/FormElements';
 import { authService } from '@/lib/auth-service';
 
-export const metadata = {
-  title: 'بوابة الأخصائيين | بَصيرة',
-  description: 'دخول آمن للأخصائيين والعيادات للوصول إلى التحليلات والتقارير السريرية.',
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 // --- Stable Form Component ---
 function ClinicianLoginForm({ 

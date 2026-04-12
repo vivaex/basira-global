@@ -7,17 +7,6 @@ import NetworkBackground from '../components/layout/NetworkBackground';
 import { authService } from '../../lib/auth-service';
 import { StableFieldInput as FieldInput } from '../components/ui/FormElements';
 
-export const metadata = {
-  title: 'تسجيل جديد | بَصيرة',
-  description: 'أنشئ حسابك الخارق الآن لبدء مغامرة التعلّم في منظومة بصيرة.',
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 // --- Stable Form Component ---
 function RegisterForm({ 
