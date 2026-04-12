@@ -57,10 +57,9 @@ export default function DigitSpanBackwardPage() {
 
   const speak = (text: string) => {
     if (!synthRef.current) return;
-    synthRef.current.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang = 'ar-SA';
-    utt.rate = 0.7;
+    utt.rate = 0.75;
     utt.pitch = 1.0;
     synthRef.current.speak(utt);
   };
@@ -73,7 +72,7 @@ export default function DigitSpanBackwardPage() {
     for (let i = 0; i < trial.sequence.length; i++) {
       setShowDigitIndex(i);
       speak(trial.sequence[i].toString());
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1700));
     }
     setShowDigitIndex(-1);
     await new Promise(r => setTimeout(r, 400));

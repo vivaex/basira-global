@@ -30,7 +30,7 @@ const SEQUENCES: SequenceLevel[] = [
   { level: 8, sequence: ['7','و','4','ش','1','خ','9','ذ'],          expectedNumbers: ['1','4','7','9'], expectedLetters: ['ذ','ش','و','خ'] },
 ];
 
-const DISPLAY_MS = 900; // وقت عرض كل عنصر بالمللي ثانية
+const DISPLAY_MS = 1800; // زيادة الوقت لتجنب تداخل الصوت
 
 export default function LetterNumberSequencing() {
   const [phase, setPhase] = useState<Phase>('intro');
@@ -47,13 +47,24 @@ export default function LetterNumberSequencing() {
     setProfile(p);
   }, []);
 
+  const speak = (text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ar-SA'; u.rate = 0.8; u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  };
+
   // كشف تسلسل العرض
   useEffect(() => {
     if (phase !== 'display') return;
     if (displayIndex >= SEQUENCES[currentLevel].sequence.length) {
-      setTimeout(() => setPhase('response'), 500);
+      setTimeout(() => setPhase('response'), 800);
       return;
     }
+    
+    // نطق العنصر الحالي
+    speak(SEQUENCES[currentLevel].sequence[displayIndex]);
+
     const t = setTimeout(() => setDisplayIndex(i => i + 1), DISPLAY_MS);
     return () => clearTimeout(t);
   }, [phase, displayIndex, currentLevel]);

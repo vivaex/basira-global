@@ -47,9 +47,9 @@ export default function DigitForwardTest() {
 
   const speak = useCallback((text: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
+    // Remove cancel() during sequence to prevent cutting off words
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ar-SA'; u.rate = 0.85; u.pitch = 1;
+    u.lang = 'ar-SA'; u.rate = 0.8; u.pitch = 1;
     window.speechSynthesis.speak(u);
   }, []);
 
@@ -79,7 +79,7 @@ export default function DigitForwardTest() {
           setTimeout(() => inputRef.current?.focus(), 100);
         }, 600);
       }
-    }, 1100);
+    }, 1600);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [phase, trialIdx, speak]);
 
