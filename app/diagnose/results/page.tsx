@@ -236,6 +236,21 @@ export default function RealTimeDiagnosticResults() {
     setIsGenerating(true);
     setApiError(null);
     try {
+      // Gather all available clinical data
+      const teacherFormScore = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('teacherFormScore') || '0') : 0;
+      const devHistory = typeof window !== 'undefined'
+        ? (() => { try { return JSON.parse(localStorage.getItem('developmentalHistory') || 'null'); } catch { return null; } })()
+        : null;
+      const digitForwardScore = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('digitForwardScore') || '0') : 0;
+      const digitForwardMaxSpan = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('digitForwardMaxSpan') || '0') : 0;
+      const digitBackwardScore = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('digitBackwardScore') || '0') : 0;
+      const digitBackwardMaxSpan = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('digitBackwardMaxSpan') || '0') : 0;
+
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -246,6 +261,13 @@ export default function RealTimeDiagnosticResults() {
           studentProfile,
           sessions,
           caseStudy: getCaseStudy(),
+          // New clinical data:
+          teacherFormScore,
+          developmentalHistory: devHistory,
+          workingMemory: {
+            digitForwardScore, digitForwardMaxSpan,
+            digitBackwardScore, digitBackwardMaxSpan,
+          },
         }),
       });
       const data = await res.json();
@@ -427,22 +449,76 @@ export default function RealTimeDiagnosticResults() {
           )}
         </section>
 
-        {/* AI Generation Button */}
-        {!aiReport ? (
-          <section className="mb-24 text-center">
-            <div className="flex flex-col items-center gap-6 mb-8">
-               <AliCharacter name={name} state={isGenerating ? 'thinking' : 'idle'} variant="compact" />
-               <button
-                 onClick={generateAIReport}
-                 disabled={isGenerating}
-                 className={`bg-indigo-600 hover:bg-indigo-500 px-12 py-6 rounded-3xl font-black text-2xl shadow-[0_0_40px_rgba(99,102,241,0.4)] transition-all ${isGenerating ? 'opacity-50 animate-pulse' : 'hover:scale-105'}`}
-               >
-                 {isGenerating ? 'جاري التحليل السريري بالذكاء الاصطناعي... ⏳' : 'توليد التقرير السريري بالذكاء الاصطناعي 🧠'}
-               </button>
-            </div>
-            {apiError && <p className="text-red-400 mt-4 text-lg">{apiError}</p>}
+        {/* ═══ AI GENERATION — always visible, prominent ═══ */}
+        {!aiReport && (
+          <section className="mb-16">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-indigo-950 to-slate-900 border-2 border-indigo-500/50 rounded-[3rem] p-10 md:p-14 shadow-[0_0_80px_rgba(99,102,241,0.2)] relative overflow-hidden"
+            >
+              {/* Glow blob */}
+              <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-600/10 blur-[80px] -ml-20 -mt-20 pointer-events-none" />
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-shrink-0 scale-90">
+                  <AliCharacter name={name} state={isGenerating ? 'thinking' : 'idle'} variant="compact" />
+                </div>
+                <div className="flex-1 text-center md:text-right">
+                  <div className="text-[0.6rem] font-mono tracking-[0.4em] text-indigo-400 mb-3 uppercase">
+                    BASIRA AI · Sovereign Analysis Engine
+                  </div>
+                  <h2 className="text-4xl font-black italic text-white mb-3">
+                    🧠 التوليد السري<br />
+                    <span className="text-indigo-400">بالذكاء الاصطناعي</span>
+                  </h2>
+                  <p className="text-slate-400 mb-6 leading-relaxed">
+                    يُحلل محرك بصيرة <strong className="text-white">جميع النتائج</strong> المجموعة —
+                    الاختبارات، استبيان الأهل، تقييم المعلم، التاريخ التطوري — ويُولّد تقريراً سريرياً شاملاً.
+                  </p>
+                  <button
+                    onClick={generateAIReport}
+                    disabled={isGenerating}
+                    className={`inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-500 px-12 py-5 rounded-3xl font-black text-2xl shadow-[0_0_40px_rgba(99,102,241,0.5)] transition-all ${
+                      isGenerating ? 'opacity-70 animate-pulse cursor-wait' : 'hover:scale-105'
+                    }`}
+                  >
+                    {isGenerating ? (
+                      <><span className="animate-spin">⚙️</span> جاري التحليل السريري...</>
+                    ) : (
+                      <><span>🚀</span> ولّد التقرير السريري الآن</>
+                    )}
+                  </button>
+                  {apiError && (
+                    <p className="text-rose-400 mt-4 text-sm">⚠️ {apiError}</p>
+                  )}
+                </div>
+              </div>
+              {/* Data completeness chips */}
+              <div className="flex flex-wrap gap-2 mt-8 border-t border-white/5 pt-6">
+                {[
+                  { label: 'نتائج الاختبارات', done: childResults.filter(r => r.score > 0).length > 0, icon: '🔬' },
+                  { label: 'استبيان الأهل', done: parentStats.length > 0, icon: '👨‍👩‍👧', href: '/diagnose/parent-hub' },
+                  { label: 'استبيان المعلم', done: typeof window !== 'undefined' && !!localStorage.getItem('teacherFormScore'), icon: '🏫', href: '/diagnose/teacher-form' },
+                  { label: 'التاريخ التطوري', done: typeof window !== 'undefined' && !!localStorage.getItem('developmentalHistory'), icon: '👶', href: '/diagnose/profile/developmental-history' },
+                  { label: 'الأرقام الأمامية', done: typeof window !== 'undefined' && !!localStorage.getItem('digitForwardScore'), icon: '🔢', href: '/diagnose/memory-test/digit-forward' },
+                  { label: 'الأرقام المعكوسة', done: typeof window !== 'undefined' && !!localStorage.getItem('digitBackwardScore'), icon: '↩️', href: '/diagnose/memory-test/digit-backward' },
+                ].map(item => (
+                  item.done ? (
+                    <span key={item.label} className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-full font-mono">
+                      {item.icon} {item.label} ✓
+                    </span>
+                  ) : (
+                    <Link key={item.label} href={item.href || '#'}
+                      className="text-xs bg-slate-800/80 border border-white/5 text-slate-500 hover:text-white hover:border-indigo-500/40 px-3 py-1.5 rounded-full font-mono transition-all">
+                      {item.icon} {item.label} +
+                    </Link>
+                  )
+                ))}
+              </div>
+            </motion.div>
           </section>
-        ) : (
+        )}
+        {aiReport && (
           <div className="animate-in fade-in slide-in-from-bottom-10 duration-700">
 
             {/* القسم 3: التشخيص الدقيق */}

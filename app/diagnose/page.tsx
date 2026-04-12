@@ -45,6 +45,7 @@ const FULL_DIAGNOSTICS_LABS = [
   { id: 'visual',        title: 'مشاكل الإدراك', icon: '👁️', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'language',      title: 'اضطراب اللغة', icon: '🗣️', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'memory-test/digit-backward', title: 'الذاكرة المعكوسة', icon: '🔢', tag: 'WISC-V', color: 'rose' as const },
+  { id: 'memory-test/digit-forward', title: 'الذاكرة الأمامية', icon: '➡️', tag: 'WISC-V', color: 'rose' as const },
 ];
 
 const SUPERVISOR_TOOLS = [
