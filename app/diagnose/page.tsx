@@ -44,6 +44,13 @@ const FULL_DIAGNOSTICS_LABS = [
   { id: 'auditory/auditory-memory', title: 'مشاكل الذاكرة', icon: '🧠', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'visual',        title: 'مشاكل الإدراك', icon: '👁️', tag: 'CLINICAL', color: 'rose' as const },
   { id: 'language',      title: 'اضطراب اللغة', icon: '🗣️', tag: 'CLINICAL', color: 'rose' as const },
+  { id: 'memory-test/digit-backward', title: 'الذاكرة المعكوسة', icon: '🔢', tag: 'WISC-V', color: 'rose' as const },
+];
+
+const SUPERVISOR_TOOLS = [
+  { id: '/clinician/dashboard', title: 'مركز الأخصائي', icon: '🏢', tag: 'ADMIN', color: 'indigo' as const, isExternal: true },
+  { id: '/diagnose/teacher-form', title: 'استبيان المعلم', icon: '🏫', tag: 'SOCIAL', color: 'emerald' as const, isExternal: true },
+  { id: '/diagnose/profile/developmental-history', title: 'التاريخ التطوري', icon: '👶', tag: 'CLINICAL', color: 'indigo' as const, isExternal: true },
 ];
 
 const PRELIMINARY_LABS = [
@@ -171,9 +178,16 @@ export default function LabsDashboard() {
             </Link>
 
             <Link href="/diagnose/report-pro" className="no-underline">
-              <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 py-2 px-6 rounded-full flex items-center gap-3 transition-colors hover:border-rose-500/30">
-                <span className="text-xl">🩺</span>
-                <span className="text-xs font-black italic text-rose-400">{t('specialist_report')}</span>
+              <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 py-2 px-6 rounded-full flex items-center gap-3 transition-colors hover:border-emerald-500/30">
+                <span className="text-xl">🧾</span>
+                <span className="text-xs font-black italic text-emerald-400">{t('reports')}</span>
+              </div>
+            </Link>
+
+            <Link href="/clinician/dashboard" className="no-underline">
+              <div className="bg-slate-950/80 backdrop-blur-xl border border-violet-500/30 py-2 px-6 rounded-full flex items-center gap-3 transition-all hover:bg-violet-500/20 hover:border-violet-500 group shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+                <span className="text-xl group-hover:scale-110 transition-transform">🏢</span>
+                <span className="text-xs font-black italic text-violet-400">{t('clinician_hub')}</span>
               </div>
             </Link>
           </div>
@@ -289,6 +303,34 @@ export default function LabsDashboard() {
                 {renderLabGrid(LABS, 'sector_interactive')}
                 {renderLabGrid(FULL_DIAGNOSTICS_LABS, 'sector_clinical')}
                 {renderLabGrid(PRELIMINARY_LABS, 'sector_preliminary')}
+
+                {/* Supervisor Hub Section */}
+                <div className="mt-24 mb-10 relative">
+                   <div className="absolute inset-0 bg-violet-600/5 blur-[100px] -z-10" />
+                   <div className="flex items-center gap-4 mb-10">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+                      <h3 className="text-2xl font-black italic text-violet-400 uppercase tracking-[0.2em] flex items-center gap-3">
+                         <span>🛠️</span> {t('supervisor_tools')}
+                      </h3>
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {SUPERVISOR_TOOLS.map((tool, i) => (
+                         <Link key={tool.id} href={tool.id} onClick={() => play('click')} className="no-underline">
+                            <GlassCard variant="playful" color={tool.color} className="p-8 border-violet-500/20 hover:border-violet-500/50 transition-all group">
+                               <div className="flex items-center gap-6">
+                                  <span className="text-5xl group-hover:scale-110 transition-transform">{tool.icon}</span>
+                                  <div className="text-right">
+                                     <h4 className="text-white font-black text-lg italic mb-1">{t(tool.id.includes('dashboard') ? 'clinician_hub' : tool.id.includes('teacher') ? 'teacher_form_short' : 'dev_history_short')}</h4>
+                                     <span className="text-[0.6rem] font-mono text-violet-400/60 uppercase tracking-widest">{tool.tag}</span>
+                                  </div>
+                               </div>
+                            </GlassCard>
+                         </Link>
+                      ))}
+                   </div>
+                </div>
               </motion.div>
             ) : (
               <motion.div key="map" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }}>

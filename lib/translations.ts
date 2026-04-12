@@ -86,6 +86,12 @@ export const translations: Record<Language, any> = {
     cat_autism: 'اضطراب طيف توحد',
     cat_social_comm: 'اضطراب التواصل الاجتماعي',
     cat_anxiety: 'اضطراب القلق',
+    'cat_memory-test/digit-backward': 'ذاكرة الأرقام المعكوسة (WISC-V)',
+    supervisor_tools: 'أدوات المشرف والأخصائي',
+    clinician_hub: 'مركز الأخصائي المتطور',
+    dev_history_short: 'التاريخ التطوري',
+    teacher_form_short: 'تقييم المعلم',
+
 
     // Diagnostic IDs & Slugs
     'cat_auditory/auditory-memory': 'الذاكرة السمعية',
@@ -314,6 +320,12 @@ export const translations: Record<Language, any> = {
     'cat_autism': 'Autism Spectrum',
     'cat_social_comm': 'Social Communication',
     'cat_anxiety': 'Anxiety Disorder',
+    'cat_memory-test/digit-backward': 'Digit Span Backward (WISC-V)',
+    supervisor_tools: 'Supervisor & Clinician Tools',
+    clinician_hub: 'Advanced Clinician Hub',
+    dev_history_short: 'Dev. History',
+    teacher_form_short: 'Teacher Rating',
+
 
     // Parent Dashboard
     parent_dashboard: 'Parent Dashboard',
