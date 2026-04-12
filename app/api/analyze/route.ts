@@ -7,6 +7,7 @@ import {
   getSkillLevelLabel,
   scoreToDifficultyLevel,
 } from '@/lib/studentProfile';
+import { apiGuard } from '@/lib/apiGuard';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -90,6 +91,13 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    // ── Security Guard ────────────────────────────
+    const guard = await apiGuard(req);
+    if (!guard.ok) {
+      return NextResponse.json({ error: guard.error }, { status: guard.status });
+    }
+    // ─────────────────────────────────────────────
 
     const body = await req.json();
     const {

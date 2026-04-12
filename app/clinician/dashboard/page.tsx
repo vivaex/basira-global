@@ -17,7 +17,7 @@ import {
 // ══════════════════════════════════════════════════════════
 
 export default function ClinicianDashboard() {
-  const [activeTab, setActiveTab] = useState<'roster' | 'cases' | 'alerts'>('cases');
+  const [activeTab, setActiveTab] = useState<'roster' | 'cases' | 'alerts' | 'analytics'>('cases');
   const [searchQuery, setSearchQuery] = useState('');
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,12 +198,12 @@ export default function ClinicianDashboard() {
 
         {/* ── Tabs ── */}
         <div className="bg-slate-900/20 border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl">
-          <div className="flex border-b border-white/5 p-2 bg-black/40">
-            {(['cases', 'roster', 'alerts'] as const).map(tab => (
+          <div className="flex flex-wrap border-b border-white/5 p-2 bg-black/40">
+            {(['cases', 'roster', 'alerts', 'analytics'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-10 py-5 text-[10px] font-black transition-all uppercase tracking-[0.2em] relative ${activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
+                className={`px-8 py-5 text-[10px] font-black transition-all uppercase tracking-[0.2em] relative ${activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
                 {activeTab === tab && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-4 right-4 h-1 bg-violet-500 rounded-full" />}
-                {tab === 'cases' ? '📂 إدارة الحالات' : tab === 'roster' ? '👥 قائمة المرضى' : '⚠️ تنبيهات AI'}
+                {tab === 'cases' ? '📂 إدارة الحالات' : tab === 'roster' ? '👥 قائمة المرضى' : tab === 'alerts' ? '⚠️ تنبيهات AI' : '📊 التحليلات'}
               </button>
             ))}
           </div>
@@ -394,6 +394,54 @@ export default function ClinicianDashboard() {
                 )}
               </div>
             )}
+
+            {/* ──── تبويب التحليلات (Analytics) ──── */}
+            {activeTab === 'analytics' && (
+              <div className="py-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-slate-900 border border-white/10 rounded-3xl p-6">
+                    <h3 className="text-xl font-black text-white mb-4">توزيع التقييمات السريرية</h3>
+                    <div className="space-y-4">
+                      {[{ label: 'طبيعي (WNL)', count: stats.green, color: 'emerald' },
+                        { label: 'متابعة (Borderline)', count: stats.yellow, color: 'amber' },
+                        { label: 'إحالة (Deficit)', count: stats.red, color: 'rose' }].map(item => {
+                        const percent = stats.total > 0 ? Math.round((item.count / stats.total) * 100) : 0;
+                        return (
+                          <div key={item.label} className="relative">
+                            <div className="flex justify-between text-xs text-slate-400 mb-1">
+                              <span>{item.label}</span>
+                              <span className="font-bold text-white">{item.count} حالة ({percent}%)</span>
+                            </div>
+                            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${percent}%` }}
+                                className={`h-full bg-${item.color}-500`} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900 border border-white/10 rounded-3xl p-6">
+                    <h3 className="text-xl font-black text-white mb-4">تغطية مجالات WISC-V</h3>
+                    <div className="text-sm text-slate-400 mb-6 leading-relaxed">
+                      يعتمد تحليل الذكاء العامل (WMI) على إتمام المقياسين التاليين. يرجى التأكد من استكمال الاختبارات للحالات قيد الدراسة.
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="font-bold text-white text-sm">🔢 الذاكرة الأمامية/المعكوسة</span>
+                        <span className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full">مكتمل لمعظم الحالات</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="font-bold text-white text-sm">🔡 تسلسل الحروف والأرقام</span>
+                        <span className="text-xs bg-rose-500/20 text-rose-400 px-3 py-1 rounded-full">مضاف حديثاً</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
 
           </div>
         </div>

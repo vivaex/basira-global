@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { YesNoSometimes } from '@/lib/studentProfile';
 
 // --- Stable Styles ---
 const inputBaseStyles = "w-full bg-slate-900/80 border border-slate-700/50 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-cyan-500 transition-all font-medium text-lg";
@@ -104,8 +105,8 @@ export const StableTriChoice = ({
   t
 }: { 
   label: string; 
-  value: string; 
-  onChange: (v: string) => void;
+  value: YesNoSometimes | undefined | string; 
+  onChange: (v: YesNoSometimes) => void;
   t: any;
 }) => {
   const opts = [
@@ -121,7 +122,7 @@ export const StableTriChoice = ({
           <button
             key={o.v}
             type="button"
-            onClick={() => onChange(o.v)}
+            onClick={() => onChange(o.v as YesNoSometimes)}
             className={`flex-1 py-4 rounded-2xl text-lg font-black transition-all border-2 ${
               value === o.v
                 ? o.color === 'emerald' ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'
