@@ -5,6 +5,89 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import NetworkBackground from '../components/layout/NetworkBackground';
 import { authService } from '../../lib/auth-service';
+import { StableFieldInput as FieldInput } from '../components/ui/FormElements';
+
+export const metadata = {
+  title: 'تسجيل جديد | بَصيرة',
+  description: 'أنشئ حسابك الخارق الآن لبدء مغامرة التعلّم في منظومة بصيرة.',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+// --- Stable Form Component ---
+function RegisterForm({ 
+  onSubmit, 
+  loading, 
+  error, 
+  fullName, setFullName, 
+  email, setEmail, 
+  password, setPassword 
+}: any) {
+  const [focused, setFocused] = useState<string | null>(null);
+
+  return (
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {error && (
+        <div style={{ color: '#ff4b4b', fontSize: '0.8rem', background: 'rgba(255,75,75,0.1)', padding: '0.75rem', borderRadius: '0.75rem', border: '1px solid rgba(255,75,75,0.2)' }}>
+          {error}
+        </div>
+      )}
+      
+      <FieldInput
+        placeholder="الاسم الكامل للبطل..."
+        value={fullName}
+        onChange={setFullName}
+        id="fullName"
+        className="!mb-0"
+      />
+
+      <FieldInput
+        type="email"
+        placeholder="البريد الإلكتروني..."
+        value={email}
+        onChange={setEmail}
+        id="email"
+        className="!mb-0"
+      />
+
+      <FieldInput
+        type="password"
+        placeholder="كلمة المرور..."
+        value={password}
+        onChange={setPassword}
+        id="password"
+        className="!mb-0"
+      />
+
+      <motion.button
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.97 }}
+        type="submit"
+        disabled={loading}
+        style={{
+          width: '100%',
+          padding: '1.1rem',
+          background: 'linear-gradient(135deg, var(--accent-cyan-dark), #6366f1)',
+          border: 'none',
+          borderRadius: '1.25rem',
+          color: '#fff',
+          fontSize: '1.1rem',
+          fontWeight: 900,
+          cursor: loading ? 'not-allowed' : 'pointer',
+          boxShadow: '0 8px 32px rgba(99,102,241,0.3)',
+          marginTop: '1rem'
+        }}
+      >
+        {loading ? 'جاري الانطلاق...' : 'بدء المهمة'}
+      </motion.button>
+    </form>
+  );
+}
 
 export default function RegisterPortal() {
   const [fullName, setFullName] = useState('');
@@ -13,7 +96,6 @@ export default function RegisterPortal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [focused, setFocused] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -126,94 +208,14 @@ export default function RegisterPortal() {
               <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>جاري الانتقال لصفحة الدخول...</p>
             </motion.div>
           ) : (
-            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {error && (
-                <div style={{ color: '#ff4b4b', fontSize: '0.8rem', background: 'rgba(255,75,75,0.1)', padding: '0.75rem', borderRadius: '0.75rem', border: '1px solid rgba(255,75,75,0.2)' }}>
-                  {error}
-                </div>
-              )}
-              
-              <input
-                type="text"
-                placeholder="الاسم الكامل للبطل..."
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                onFocus={() => setFocused('name')}
-                onBlur={() => setFocused(null)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(2,6,23,0.8)',
-                  border: `2px solid ${focused === 'name' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '1.25rem',
-                  padding: '1.1rem 1.5rem',
-                  color: 'var(--text-primary)',
-                  textAlign: 'center',
-                  outline: 'none',
-                }}
-              />
-
-              <input
-                type="email"
-                placeholder="البريد الإلكتروني..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setFocused('email')}
-                onBlur={() => setFocused(null)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(2,6,23,0.8)',
-                  border: `2px solid ${focused === 'email' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '1.25rem',
-                  padding: '1.1rem 1.5rem',
-                  color: 'var(--text-primary)',
-                  textAlign: 'center',
-                  outline: 'none',
-                }}
-              />
-
-              <input
-                type="password"
-                placeholder="كلمة المرور..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setFocused('password')}
-                onBlur={() => setFocused(null)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(2,6,23,0.8)',
-                  border: `2px solid ${focused === 'password' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '1.25rem',
-                  padding: '1.1rem 1.5rem',
-                  color: 'var(--text-primary)',
-                  textAlign: 'center',
-                  outline: 'none',
-                }}
-              />
-
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '1.1rem',
-                  background: 'linear-gradient(135deg, var(--accent-cyan-dark), #6366f1)',
-                  border: 'none',
-                  borderRadius: '1.25rem',
-                  color: '#fff',
-                  fontSize: '1.1rem',
-                  fontWeight: 900,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 8px 32px rgba(99,102,241,0.3)',
-                }}
-              >
-                {loading ? 'جاري الانطلاق...' : 'بدء المهمة'}
-              </motion.button>
-            </form>
+            <RegisterForm
+              onSubmit={handleRegister}
+              loading={loading}
+              error={error}
+              fullName={fullName} setFullName={setFullName}
+              email={email} setEmail={setEmail}
+              password={password} setPassword={setPassword}
+            />
           )}
 
           <div style={{ marginTop: '2.5rem' }}>

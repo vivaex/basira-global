@@ -1,11 +1,74 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import NetworkBackground from '@/app/components/NetworkBackground';
-
+import { StableFieldInput as FieldInput } from '@/app/components/ui/FormElements';
 import { authService } from '@/lib/auth-service';
+
+export const metadata = {
+  title: 'بوابة الأخصائيين | بَصيرة',
+  description: 'دخول آمن للأخصائيين والعيادات للوصول إلى التحليلات والتقارير السريرية.',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+// --- Stable Form Component ---
+function ClinicianLoginForm({ 
+  onSubmit, 
+  loading, 
+  error, 
+  email, setEmail, 
+  password, setPassword 
+}: any) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-6">
+      {error && (
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-2xl text-xs font-bold">
+          {error}
+        </div>
+      )}
+      
+      <FieldInput
+        type="email"
+        placeholder="البريد الإلكتروني المهني"
+        value={email}
+        onChange={setEmail}
+        id="clinician-email"
+        className="!mb-0"
+      />
+
+      <FieldInput
+        type="password"
+        placeholder="كلمة مرور المركز"
+        value={password}
+        onChange={setPassword}
+        id="clinician-password"
+        className="!mb-0"
+      />
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full bg-cyan-500 hover:bg-cyan-400 py-6 rounded-2xl font-black text-white text-lg italic shadow-2xl transition-all flex items-center justify-center gap-4"
+        disabled={loading}
+      >
+        {loading ? (
+          <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <>
+            <span>تأكيد الهوية</span>
+            <span>🔓</span>
+          </>
+        )}
+      </motion.button>
+    </form>
+  );
+}
 
 export default function ClinicianLogin() {
   const [email, setEmail] = useState('');
@@ -44,49 +107,13 @@ export default function ClinicianLogin() {
             <h1 className="text-3xl font-black italic mb-2 tracking-tight">بوابة الوصول السريري</h1>
             <p className="text-slate-400 text-sm mb-12 font-medium">أدخل هويتك المهنية للوصول إلى بيانات المركز السيادي.</p>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-                {error && (
-                  <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-2xl text-xs font-bold">
-                    {error}
-                  </div>
-                )}
-                <div>
-                    <input 
-                       type="email" 
-                       placeholder="البريد الإلكتروني المهني" 
-                       required
-                       className="w-full bg-black/50 border border-white/10 rounded-2xl p-5 text-center font-bold text-sm focus:border-cyan-500 outline-none transition-all"
-                       value={email}
-                       onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
-                <div>
-                   <input 
-                      type="password" 
-                      placeholder="كلمة مرور المركز" 
-                      required
-                      className="w-full bg-black/50 border border-white/10 rounded-2xl p-5 text-center font-bold text-sm focus:border-cyan-500 outline-none transition-all"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                   />
-                </div>
-
-                <motion.button
-                   whileHover={{ scale: 1.02 }}
-                   whileTap={{ scale: 0.98 }}
-                   className="w-full bg-cyan-500 hover:bg-cyan-400 py-6 rounded-2xl font-black text-white text-lg italic shadow-2xl transition-all flex items-center justify-center gap-4"
-                   disabled={loading}
-                >
-                   {loading ? (
-                     <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                   ) : (
-                     <>
-                        <span>تأكيد الهوية</span>
-                        <span>🔓</span>
-                     </>
-                   )}
-                </motion.button>
-            </form>
+            <ClinicianLoginForm
+              onSubmit={handleLogin}
+              loading={loading}
+              error={error}
+              email={email} setEmail={setEmail}
+              password={password} setPassword={setPassword}
+            />
 
             <div className="mt-12 flex justify-center gap-8 text-[10px] font-mono text-slate-600 tracking-widest uppercase">
                <span>Clinic ID: BAS_2604</span>

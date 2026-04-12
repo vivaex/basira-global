@@ -1,5 +1,17 @@
 'use client';
 
+export const metadata = {
+  title: 'الملف الشخصي | بَصيرة',
+  description: 'قم بإعداد ملفك الشخصي لبدء رحلة التشخيص الذكي.',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -43,83 +55,7 @@ const SUBJECTS_EN = ['Reading', 'Writing', 'Math', 'Science', 'English', 'Religi
 // Components
 // ────────────────────────────────────────────────
 
-function TriChoice({
-  label, value, onChange, t,
-}: { label: string; value: YesNoSometimes; onChange: (v: YesNoSometimes) => void, t: any }) {
-  const opts: { v: YesNoSometimes; label: string; color: string }[] = [
-    { v: 'yes',       label: t('yes'),    color: 'emerald' },
-    { v: 'sometimes', label: t('sometimes'), color: 'amber' },
-    { v: 'no',        label: t('no'),     color: 'rose' },
-  ];
-  return (
-    <div className="mb-5">
-      <p className="text-slate-300 font-bold mb-2 text-sm">{label}</p>
-      <div className="flex gap-2">
-        {opts.map(o => (
-          <button
-            key={o.v}
-            type="button"
-            onClick={() => onChange(o.v)}
-            className={`flex-1 py-2 rounded-xl text-sm font-black transition-all border-2 ${
-              value === o.v
-                ? o.color === 'emerald' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                : o.color === 'amber'   ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                : 'bg-rose-500/20 border-rose-500 text-rose-300'
-                : 'bg-slate-800/60 border-slate-700 text-slate-500 hover:border-slate-500'
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function YesNo({
-  label, value, onChange, t,
-}: { label: string; value: boolean; onChange: (v: boolean) => void, t: any }) {
-  return (
-    <div className="mb-5">
-      <p className="text-slate-300 font-bold mb-2 text-sm">{label}</p>
-      <div className="flex gap-2">
-        {[{ v: true, l: t('yes') }, { v: false, l: t('no') }].map(o => (
-          <button
-            key={String(o.v)}
-            type="button"
-            onClick={() => onChange(o.v)}
-            className={`flex-1 py-2 rounded-xl text-sm font-black transition-all border-2 ${
-              value === o.v
-                ? o.v ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                       : 'bg-rose-500/20 border-rose-500 text-rose-300'
-                : 'bg-slate-800/60 border-slate-700 text-slate-500 hover:border-slate-500'
-            }`}
-          >
-            {o.l}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FieldInput({ label, value, onChange, placeholder, type = 'text' }: {
-  label: string; value: string | number; onChange: (v: string) => void;
-  placeholder?: string; type?: string;
-}) {
-  return (
-    <div className="mb-5">
-      <label className="block text-slate-300 font-bold mb-2 text-sm">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-slate-800/60 border-2 border-slate-700 hover:border-slate-500 focus:border-cyan-500/60 text-white rounded-2xl px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600"
-      />
-    </div>
-  );
-}
+// Form components replaced by Stable components from @/app/components/ui/FormElements
 
 // ────────────────────────────────────────────────
 // Main Page Component

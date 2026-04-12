@@ -104,55 +104,6 @@ function CaseStudyContent() {
     if (currentStep > 0) setCurrentStep(s => s - 1);
   };
 
-  const YesNoToggle = ({ section, field, label }: { section: keyof CaseStudy, field: string, label: string }) => {
-    if (!formData) return null;
-    const sectionData = formData[section] as any;
-    const val = (sectionData && sectionData[field]) || 'no';
-    return (
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-        <span className="text-slate-200 font-medium mb-3 md:mb-0 text-lg">{label}</span>
-        <div className="flex bg-slate-900 rounded-xl overflow-hidden shadow-inner border border-slate-700">
-          <button 
-            onClick={() => updateSection(section, field, 'yes')}
-            className={`px-6 py-2 font-bold transition-colors ${val === 'yes' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}
-          >
-            نعم
-          </button>
-          <button 
-            onClick={() => updateSection(section, field, 'sometimes')}
-            className={`px-6 py-2 font-bold border-x border-slate-700 transition-colors ${val === 'sometimes' ? 'bg-amber-500 text-white' : 'text-slate-400 hover:text-white'}`}
-          >
-            أحياناً
-          </button>
-          <button 
-            onClick={() => updateSection(section, field, 'no')}
-            className={`px-6 py-2 font-bold transition-colors ${val === 'no' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-white'}`}
-          >
-            لا
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const InputField = ({ section, field, label, type = 'text', placeholder = '' }: { section: keyof CaseStudy, field: string, label: string, type?: string, placeholder?: string }) => {
-    if (!formData) return null;
-    const sectionData = formData[section] as any;
-    const val = (sectionData && sectionData[field]) || '';
-    return (
-      <div className="flex flex-col mb-4">
-        <label className="text-slate-300 font-bold mb-2 text-lg">{label}</label>
-        <input 
-          type={type} 
-          value={val}
-          placeholder={placeholder}
-          onChange={(e) => updateSection(section, field, e.target.value)}
-          className="bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500 transition-colors"
-        />
-      </div>
-    );
-  };
-
   return (
     <main className="min-h-screen bg-[#020617] text-white p-6 md:p-12 font-sans overflow-x-hidden" dir="rtl">
       {/* Background blobs */}
@@ -225,8 +176,8 @@ function CaseStudyContent() {
                 <div className="space-y-6">
                   {currentStep === 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <InputField section="generalInfo" field="fullName" label="اسم الطفل الكامل" placeholder="مثال: أحمد عبد الله" />
-                      <InputField section="generalInfo" field="age" label="العمر" type="number" placeholder="بالسنوات" />
+                      <InputField label="اسم الطفل الكامل" placeholder="مثال: أحمد عبد الله" value={formData.generalInfo.fullName} onChange={v => updateSection('generalInfo', 'fullName', v)} />
+                      <InputField label="العمر" type="number" placeholder="بالسنوات" value={formData.generalInfo.age} onChange={v => updateSection('generalInfo', 'age', v)} />
                       <div className="flex flex-col mb-4">
                          <label className="text-slate-300 font-bold mb-2 text-lg">الجنس</label>
                          <select 
@@ -239,71 +190,71 @@ function CaseStudyContent() {
                            <option value="female">أنثى</option>
                          </select>
                       </div>
-                      <InputField section="generalInfo" field="grade" label="الصف الدراسي" placeholder="مثال: الصف الثاني" />
-                      <InputField section="generalInfo" field="schoolSystem" label="النظام التعليمي / المدرسة" placeholder="مثال: حكومي، أهلي، انترناشونال" />
-                      <InputField section="generalInfo" field="homeLanguages" label="اللغات المحكية في المنزل" placeholder="مثال: عربية، إنجليزية" />
+                      <InputField label="الصف الدراسي" placeholder="مثال: الصف الثاني" value={formData.generalInfo.grade} onChange={v => updateSection('generalInfo', 'grade', v)} />
+                      <InputField label="النظام التعليمي / المدرسة" placeholder="مثال: حكومي، أهلي، انترناشونال" value={formData.generalInfo.schoolSystem} onChange={v => updateSection('generalInfo', 'schoolSystem', v)} />
+                      <InputField label="اللغات المحكية في المنزل" placeholder="مثال: عربية، إنجليزية" value={formData.generalInfo.homeLanguages} onChange={v => updateSection('generalInfo', 'homeLanguages', v)} />
                     </div>
                   )}
 
                   {currentStep === 1 && (
                     <div className="space-y-4">
                       <h3 className="text-cyan-400 font-bold text-xl mt-4">الحمل والولادة</h3>
-                      <YesNoToggle section="medicalHistory" field="pregnancyComplications" label="هل حدثت مضاعفات أثناء الحمل؟" />
-                      <YesNoToggle section="medicalHistory" field="prematureBirth" label="هل تمت الولادة قبل الأوان (خدج)؟" />
-                      <YesNoToggle section="medicalHistory" field="oxygenDeprivation" label="هل حدث نقص أكسجين عند الولادة؟" />
+                      <YesNoToggle label="هل حدثت مضاعفات أثناء الحمل؟" value={formData.medicalHistory.pregnancyComplications} onChange={v => updateSection('medicalHistory', 'pregnancyComplications', v)} />
+                      <YesNoToggle label="هل تمت الولادة قبل الأوان (خدج)؟" value={formData.medicalHistory.prematureBirth} onChange={v => updateSection('medicalHistory', 'prematureBirth', v)} />
+                      <YesNoToggle label="هل حدث نقص أكسجين عند الولادة؟" value={formData.medicalHistory.oxygenDeprivation} onChange={v => updateSection('medicalHistory', 'oxygenDeprivation', v)} />
                       
                       <h3 className="text-cyan-400 font-bold text-xl mt-8">الطفولة المبكرة</h3>
-                      <YesNoToggle section="medicalHistory" field="highFevers" label="هل عانى من حرارة مرتفعة طويلة أو غيبوبة؟" />
-                      <YesNoToggle section="medicalHistory" field="severeJaundice" label="هل أصيب باصفرار شديد (يرقان) بعد الولادة؟" />
-                      <YesNoToggle section="medicalHistory" field="seizures" label="هل تعرض لتشنجات أو نوبات صرع؟" />
-                      <YesNoToggle section="medicalHistory" field="glandHormoneIssues" label="هل يعاني من مشاكل في الغدد أو الهرمونات؟" />
+                      <YesNoToggle label="هل عانى من حرارة مرتفعة طويلة أو غيبوبة؟" value={formData.medicalHistory.highFevers} onChange={v => updateSection('medicalHistory', 'highFevers', v)} />
+                      <YesNoToggle label="هل أصيب باصفرار شديد (يرقان) بعد الولادة؟" value={formData.medicalHistory.severeJaundice} onChange={v => updateSection('medicalHistory', 'severeJaundice', v)} />
+                      <YesNoToggle label="هل تعرض لتشنجات أو نوبات صرع؟" value={formData.medicalHistory.seizures} onChange={v => updateSection('medicalHistory', 'seizures', v)} />
+                      <YesNoToggle label="هل يعاني من مشاكل في الغدد أو الهرمونات؟" value={formData.medicalHistory.glandHormoneIssues} onChange={v => updateSection('medicalHistory', 'glandHormoneIssues', v)} />
 
                       <h3 className="text-cyan-400 font-bold text-xl mt-8">السمع والبصر والأدوية</h3>
-                      <YesNoToggle section="medicalHistory" field="hearingLoss" label="هل يعاني من ضعف سمع؟" />
-                      <YesNoToggle section="medicalHistory" field="visionLoss" label="هل يعاني من ضعف بصر؟" />
-                      <YesNoToggle section="medicalHistory" field="chronicMedications" label="هل يتناول أدوية بشكل مستمر؟" />
-                      <YesNoToggle section="medicalHistory" field="adhdMedications" label="هل يتناول أدوية خاصة بفرط الحركة وتشتت الانتباه؟" />
+                      <YesNoToggle label="هل يعاني من ضعف سمع؟" value={formData.medicalHistory.hearingLoss} onChange={v => updateSection('medicalHistory', 'hearingLoss', v)} />
+                      <YesNoToggle label="هل يعاني من ضعف بصر؟" value={formData.medicalHistory.visionLoss} onChange={v => updateSection('medicalHistory', 'visionLoss', v)} />
+                      <YesNoToggle label="هل يتناول أدوية بشكل مستمر؟" value={formData.medicalHistory.chronicMedications} onChange={v => updateSection('medicalHistory', 'chronicMedications', v)} />
+                      <YesNoToggle label="هل يتناول أدوية خاصة بفرط الحركة وتشتت الانتباه؟" value={formData.medicalHistory.adhdMedications} onChange={v => updateSection('medicalHistory', 'adhdMedications', v)} />
                     </div>
                   )}
 
                   {currentStep === 2 && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-700/50">
-                        <InputField section="developmentalHistory" field="sittingAge" label="متى بدأ الجلوس؟ (بالأشهر)" />
-                        <InputField section="developmentalHistory" field="walkingAge" label="متى بدأ المشي؟ (بالأشهر)" />
-                        <InputField section="developmentalHistory" field="firstWordAge" label="متى نطق أول كلمة؟ (بالأشهر)" />
+                        <InputField label="متى بدأ الجلوس؟ (بالأشهر)" value={formData.developmentalHistory.sittingAge} onChange={v => updateSection('developmentalHistory', 'sittingAge', v)} />
+                        <InputField label="متى بدأ المشي؟ (بالأشهر)" value={formData.developmentalHistory.walkingAge} onChange={v => updateSection('developmentalHistory', 'walkingAge', v)} />
+                        <InputField label="متى نطق أول كلمة؟ (بالأشهر)" value={formData.developmentalHistory.firstWordAge} onChange={v => updateSection('developmentalHistory', 'firstWordAge', v)} />
                       </div>
                       
                       <h3 className="text-emerald-400 font-bold text-xl mt-6">المهارات الحركية الدقيقة</h3>
-                      <YesNoToggle section="developmentalHistory" field="balanceIssues" label="هل يعاني من ضعف في التوازن؟" />
-                      <YesNoToggle section="developmentalHistory" field="fineMotorIssues" label="هل يجد صعوبة في ربط الحذاء أو الإمساك بالقلم؟" />
+                      <YesNoToggle label="هل يعاني من ضعف في التوازن؟" value={formData.developmentalHistory.balanceIssues} onChange={v => updateSection('developmentalHistory', 'balanceIssues', v)} />
+                      <YesNoToggle label="هل يجد صعوبة في ربط الحذاء أو الإمساك بالقلم؟" value={formData.developmentalHistory.fineMotorIssues} onChange={v => updateSection('developmentalHistory', 'fineMotorIssues', v)} />
                       
                       <h3 className="text-emerald-400 font-bold text-xl mt-8">اللغة والنطق</h3>
-                      <YesNoToggle section="developmentalHistory" field="speechDelay" label="هل لاحظت تأخراً في الكلام مقارنة بأقرانه؟" />
-                      <YesNoToggle section="developmentalHistory" field="pronunciationIssues" label="هل لديه مشاكل في نطق وتلفظ بعض الحروف؟" />
+                      <YesNoToggle label="هل لاحظت تأخراً في الكلام مقارنة بأقرانه؟" value={formData.developmentalHistory.speechDelay} onChange={v => updateSection('developmentalHistory', 'speechDelay', v)} />
+                      <YesNoToggle label="هل لديه مشاكل في نطق وتلفظ بعض الحروف؟" value={formData.developmentalHistory.pronunciationIssues} onChange={v => updateSection('developmentalHistory', 'pronunciationIssues', v)} />
 
                       <h3 className="text-emerald-400 font-bold text-xl mt-8">المهارات الاجتماعية</h3>
-                      <YesNoToggle section="developmentalHistory" field="eyeContact" label="هل يتواصل بصرياً بشكل جيد عند الحديث؟" />
-                      <YesNoToggle section="developmentalHistory" field="playsWithKids" label="هل يندمج ويلعب مع الأطفال الآخرين؟" />
-                      <YesNoToggle section="developmentalHistory" field="fearsNewSituations" label="هل يخاف بشدة من المواقف أو الأماكن الجديدة؟" />
+                      <YesNoToggle label="هل يتواصل بصرياً بشكل جيد عند الحديث؟" value={formData.developmentalHistory.eyeContact} onChange={v => updateSection('developmentalHistory', 'eyeContact', v)} />
+                      <YesNoToggle label="هل يندمج ويلعب مع الأطفال الآخرين؟" value={formData.developmentalHistory.playsWithKids} onChange={v => updateSection('developmentalHistory', 'playsWithKids', v)} />
+                      <YesNoToggle label="هل يخاف بشدة من المواقف أو الأماكن الجديدة؟" value={formData.developmentalHistory.fearsNewSituations} onChange={v => updateSection('developmentalHistory', 'fearsNewSituations', v)} />
                     </div>
                   )}
 
                   {currentStep === 3 && (
                     <div className="space-y-4">
                       <h3 className="text-emerald-400 font-bold text-xl mt-4">التاريخ الوراثي</h3>
-                      <YesNoToggle section="familyBackground" field="historyLearningDisabilities" label="هل يوجد أحد في العائلة لديه صعوبات تعلم؟" />
-                      <YesNoToggle section="familyBackground" field="historyDyslexia" label="عسر قراءة؟" />
-                      <YesNoToggle section="familyBackground" field="historyAdhd" label="فرط حركة وتشتت انتباه؟" />
-                      <YesNoToggle section="familyBackground" field="historyAutism" label="توحد؟" />
-                      <YesNoToggle section="familyBackground" field="historyHighIntelligence" label="ذكاء مرتفع جداً (موهبة)؟" />
+                      <YesNoToggle label="هل يوجد أحد في العائلة لديه صعوبات تعلم؟" value={formData.familyBackground.historyLearningDisabilities} onChange={v => updateSection('familyBackground', 'historyLearningDisabilities', v)} />
+                      <YesNoToggle label="عسر قراءة؟" value={formData.familyBackground.historyDyslexia} onChange={v => updateSection('familyBackground', 'historyDyslexia', v)} />
+                      <YesNoToggle label="فرط حركة وتشتت انتباه؟" value={formData.familyBackground.historyAdhd} onChange={v => updateSection('familyBackground', 'historyAdhd', v)} />
+                      <YesNoToggle label="توحد؟" value={formData.familyBackground.historyAutism} onChange={v => updateSection('familyBackground', 'historyAutism', v)} />
+                      <YesNoToggle label="ذكاء مرتفع جداً (موهبة)؟" value={formData.familyBackground.historyHighIntelligence} onChange={v => updateSection('familyBackground', 'historyHighIntelligence', v)} />
                       
                       <h3 className="text-emerald-400 font-bold text-xl mt-8">الوضع الأسري والدعم</h3>
-                      <YesNoToggle section="familyBackground" field="livesWithBothParents" label="هل يعيش الطفل مستقراً مع كلا الوالدين؟" />
-                      <YesNoToggle section="familyBackground" field="familyConflicts" label="هل تحدث خلافات أسرية ظاهرة تؤثر عليه؟" />
-                      <YesNoToggle section="familyBackground" field="frequentSchoolChanges" label="هل ينتقل كثيراً بين المدارس أو المنازل؟" />
-                      <YesNoToggle section="familyBackground" field="homeworkFollowUp" label="هل يتم متابعة واجباته المدرسية يومياً من الأسرة؟" />
-                      <InputField section="familyBackground" field="dailyStudyHours" label="كم ساعة يدرس يومياً تقريباً؟" placeholder="مثال: ساعتين" />
+                      <YesNoToggle label="هل يعيش الطفل مستقراً مع كلا الوالدين؟" value={formData.familyBackground.livesWithBothParents} onChange={v => updateSection('familyBackground', 'livesWithBothParents', v)} />
+                      <YesNoToggle label="هل تحدث خلافات أسرية ظاهرة تؤثر عليه؟" value={formData.familyBackground.familyConflicts} onChange={v => updateSection('familyBackground', 'familyConflicts', v)} />
+                      <YesNoToggle label="هل ينتقل كثيراً بين المدارس أو المنازل؟" value={formData.familyBackground.frequentSchoolChanges} onChange={v => updateSection('familyBackground', 'frequentSchoolChanges', v)} />
+                      <YesNoToggle label="هل يتم متابعة واجباته المدرسية يومياً من الأسرة؟" value={formData.familyBackground.homeworkFollowUp} onChange={v => updateSection('familyBackground', 'homeworkFollowUp', v)} />
+                      <InputField label="كم ساعة يدرس يومياً تقريباً؟" placeholder="مثال: ساعتين" value={formData.familyBackground.dailyStudyHours} onChange={v => updateSection('familyBackground', 'dailyStudyHours', v)} />
                     </div>
                   )}
 
@@ -313,42 +264,42 @@ function CaseStudyContent() {
                         💡 أجب عن هذه الأسئلة بناءً على ملاحظاتك المستمرة لتصرفات الطفل في المنزل والمدرسة.
                       </div>
                       <h3 className="text-purple-400 font-bold text-xl">فرط الحركة والانتباه</h3>
-                      <YesNoToggle section="behaviorAttention" field="movesA_lot" label="هل يتحرك كثيراً وكأنه يعمل بمحرك؟" />
-                      <YesNoToggle section="behaviorAttention" field="cantSitLong" label="هل يصعب عليه الجلوس في مكانه لفترة طويلة؟" />
-                      <YesNoToggle section="behaviorAttention" field="easilyDistracted" label="هل يتشتت انتباهه بسهولة لأتفه المؤثرات؟" />
-                      <YesNoToggle section="behaviorAttention" field="interruptsOthers" label="هل يقاطع الآخرين أثناء الحديث أو يندفع في الإجابة؟" />
-                      <YesNoToggle section="behaviorAttention" field="forgetsInstructions" label="هل ينسى التعليمات أو المهام المطلوبة؟" />
-                      <YesNoToggle section="behaviorAttention" field="delaysHomework" label="هل يماطل ويتأخر في البدء بالمهام والواجبات؟" />
-                      <YesNoToggle section="behaviorAttention" field="getsAngryFast" label="هل يغضب ويفقد أعصابه بسرعة؟" />
+                      <YesNoToggle label="هل يتحرك كثيراً وكأنه يعمل بمحرك؟" value={formData.behaviorAttention.movesA_lot} onChange={v => updateSection('behaviorAttention', 'movesA_lot', v)} />
+                      <YesNoToggle label="هل يصعب عليه الجلوس في مكانه لفترة طويلة؟" value={formData.behaviorAttention.cantSitLong} onChange={v => updateSection('behaviorAttention', 'cantSitLong', v)} />
+                      <YesNoToggle label="هل يتشتت انتباهه بسهولة لأتفه المؤثرات؟" value={formData.behaviorAttention.easilyDistracted} onChange={v => updateSection('behaviorAttention', 'easilyDistracted', v)} />
+                      <YesNoToggle label="هل يقاطع الآخرين أثناء الحديث أو يندفع في الإجابة؟" value={formData.behaviorAttention.interruptsOthers} onChange={v => updateSection('behaviorAttention', 'interruptsOthers', v)} />
+                      <YesNoToggle label="هل ينسى التعليمات أو المهام المطلوبة؟" value={formData.behaviorAttention.forgetsInstructions} onChange={v => updateSection('behaviorAttention', 'forgetsInstructions', v)} />
+                      <YesNoToggle label="هل يماطل ويتأخر في البدء بالمهام والواجبات؟" value={formData.behaviorAttention.delaysHomework} onChange={v => updateSection('behaviorAttention', 'delaysHomework', v)} />
+                      <YesNoToggle label="هل يغضب ويفقد أعصابه بسرعة؟" value={formData.behaviorAttention.getsAngryFast} onChange={v => updateSection('behaviorAttention', 'getsAngryFast', v)} />
 
                       <h3 className="text-purple-400 font-bold text-xl mt-8">السلوك التنفيذي (Executive Function)</h3>
-                      <YesNoToggle section="executiveFunction" field="organizesBag" label="هل يمكنه تنظيم حقيبته المدرسية وأدواته بنفسه؟" />
-                      <YesNoToggle section="executiveFunction" field="knowsStepsOrder" label="هل يعرف ترتيب الخطوات لإنجاز مهمة (كالاستعداد للمدرسة)؟" />
-                      <YesNoToggle section="executiveFunction" field="losesItems" label="هل يضيع أغراضه المدرسية أو الشخصية باستمرار؟" />
-                      <YesNoToggle section="executiveFunction" field="forgetsAssignments" label="هل ينسى الفروض المطلوبة منه بشكل متكرر؟" />
-                      <YesNoToggle section="executiveFunction" field="planningDifficulty" label="هل يجد صعوبة واضحة في التخطيط لأي مشروع أو مهمة متسلسلة؟" />
+                      <YesNoToggle label="هل يمكنه تنظيم حقيبته المدرسية وأدواته بنفسه؟" value={formData.executiveFunction.organizesBag} onChange={v => updateSection('executiveFunction', 'organizesBag', v)} />
+                      <YesNoToggle label="هل يعرف ترتيب الخطوات لإنجاز مهمة (كالاستعداد للمدرسة)؟" value={formData.executiveFunction.knowsStepsOrder} onChange={v => updateSection('executiveFunction', 'knowsStepsOrder', v)} />
+                      <YesNoToggle label="هل يضيع أغراضه المدرسية أو الشخصية باستمرار؟" value={formData.executiveFunction.losesItems} onChange={v => updateSection('executiveFunction', 'losesItems', v)} />
+                      <YesNoToggle label="هل ينسى الفروض المطلوبة منه بشكل متكرر؟" value={formData.executiveFunction.forgetsAssignments} onChange={v => updateSection('executiveFunction', 'forgetsAssignments', v)} />
+                      <YesNoToggle label="هل يجد صعوبة واضحة في التخطيط لأي مشروع أو مهمة متسلسلة؟" value={formData.executiveFunction.planningDifficulty} onChange={v => updateSection('executiveFunction', 'planningDifficulty', v)} />
                     </div>
                   )}
 
                   {currentStep === 5 && (
                     <div className="space-y-4">
-                      <InputField section="academicHistory" field="difficultyStart" label="متى بدأت الصعوبة بالتحديد؟ (مثال: الروضة، الصف الأول)" />
-                      <YesNoToggle section="academicHistory" field="startedInFirstGrade" label="هل ظهرت المشكلة بوضوح في الصف الأول (أو قبل ذلك)؟" />
-                      <InputField section="academicHistory" field="hardestSubject" label="ما هي المادة الأكثر صعوبة بالنسبة له؟" />
+                      <InputField label="متى بدأت الصعوبة بالتحديد؟ (مثال: الروضة، الصف الأول)" value={formData.academicHistory.difficultyStart} onChange={v => updateSection('academicHistory', 'difficultyStart', v)} />
+                      <YesNoToggle label="هل ظهرت المشكلة بوضوح في الصف الأول (أو قبل ذلك)؟" value={formData.academicHistory.startedInFirstGrade} onChange={v => updateSection('academicHistory', 'startedInFirstGrade', v)} />
+                      <InputField label="ما هي المادة الأكثر صعوبة بالنسبة له؟" value={formData.academicHistory.hardestSubject} onChange={v => updateSection('academicHistory', 'hardestSubject', v)} />
                       
                       <h3 className="text-amber-400 font-bold text-xl mt-6">الأداء الأكاديمي العام</h3>
-                      <YesNoToggle section="academicHistory" field="readingStruggle" label="هل يعاني أو يتلعثم أثناء القراءة؟" />
-                      <YesNoToggle section="academicHistory" field="mixesLetters" label="هل يخلط بين الحروف المتشابهة شكلاً؟" />
-                      <YesNoToggle section="academicHistory" field="writesSlowly" label="هل يكتب ببطء شديد مقارنة بزملائه؟" />
-                      <YesNoToggle section="academicHistory" field="countingStruggle" label="هل يجد صعوبة في العد أو الحساب الذهني؟" />
-                      <YesNoToggle section="academicHistory" field="memorizedTimesTable" label="هل حفظ جدول الضرب بشكل سليم؟" />
-                      <YesNoToggle section="academicHistory" field="understandsButCantSolve" label="هل يبدو أنه يفهم السؤال لكن لا يعرف طريقة الحل؟" />
-                      <YesNoToggle section="academicHistory" field="spellingIssues" label="هل يواجه مشكلة ملحوظة في الإملاء؟" />
+                      <YesNoToggle label="هل يعاني أو يتلعثم أثناء القراءة؟" value={formData.academicHistory.readingStruggle} onChange={v => updateSection('academicHistory', 'readingStruggle', v)} />
+                      <YesNoToggle label="هل يخلط بين الحروف المتشابهة شكلاً؟" value={formData.academicHistory.mixesLetters} onChange={v => updateSection('academicHistory', 'mixesLetters', v)} />
+                      <YesNoToggle label="هل يكتب ببطء شديد مقارنة بزملائه؟" value={formData.academicHistory.writesSlowly} onChange={v => updateSection('academicHistory', 'writesSlowly', v)} />
+                      <YesNoToggle label="هل يجد صعوبة في العد أو الحساب الذهني؟" value={formData.academicHistory.countingStruggle} onChange={v => updateSection('academicHistory', 'countingStruggle', v)} />
+                      <YesNoToggle label="هل حفظ جدول الضرب بشكل سليم؟" value={formData.academicHistory.memorizedTimesTable} onChange={v => updateSection('academicHistory', 'memorizedTimesTable', v)} />
+                      <YesNoToggle label="هل يبدو أنه يفهم السؤال لكن لا يعرف طريقة الحل؟" value={formData.academicHistory.understandsButCantSolve} onChange={v => updateSection('academicHistory', 'understandsButCantSolve', v)} />
+                      <YesNoToggle label="هل يواجه مشكلة ملحوظة في الإملاء؟" value={formData.academicHistory.spellingIssues} onChange={v => updateSection('academicHistory', 'spellingIssues', v)} />
                       
                       <h3 className="text-amber-400 font-bold text-xl mt-8">الحالة النفسية تجاه الدراسة</h3>
-                      <YesNoToggle section="academicHistory" field="needsExtraTime" label="هل يحتاج وقتاً أطول من زملائه لإنجاز نفس الواجب أو الاختبار؟" />
-                      <YesNoToggle section="academicHistory" field="feelsFrustrated" label="هل يشعر بالإحباط أو يصف نفسه بالفشل؟" />
-                      <YesNoToggle section="academicHistory" field="refusesStudying" label="هل يتهرب أو يرفض تماماً القيام بالواجبات المدرسية؟" />
+                      <YesNoToggle label="هل يحتاج وقتاً أطول من زملائه لإنجاز نفس الواجب أو الاختبار؟" value={formData.academicHistory.needsExtraTime} onChange={v => updateSection('academicHistory', 'needsExtraTime', v)} />
+                      <YesNoToggle label="هل يشعر بالإحباط أو يصف نفسه بالفشل؟" value={formData.academicHistory.feelsFrustrated} onChange={v => updateSection('academicHistory', 'feelsFrustrated', v)} />
+                      <YesNoToggle label="هل يتهرب أو يرفض تماماً القيام بالواجبات المدرسية؟" value={formData.academicHistory.refusesStudying} onChange={v => updateSection('academicHistory', 'refusesStudying', v)} />
                     </div>
                   )}
 
@@ -359,36 +310,36 @@ function CaseStudyContent() {
                       </div>
                       
                       <h3 className="text-blue-400 font-bold text-xl">أسئلة خاصة بالقراءة (عسر القراءة - Dyslexia)</h3>
-                      <YesNoToggle section="dyslexiaIndicators" field="mixesSimilarLetters" label="هل يخلط بين الحروف المتشابهة صوتاً أو شكلاً؟" />
-                      <YesNoToggle section="dyslexiaIndicators" field="reversesLetters" label="هل يعاني من قلب الحروف (مثال: ب ↔️ د، 6 ↔️ 9)؟" />
-                      <YesNoToggle section="dyslexiaIndicators" field="readsVerySlowly" label="هل يقرأ ببطء شديد وبتهجئة متقطعة؟" />
-                      <YesNoToggle section="dyslexiaIndicators" field="losesPlaceWhileReading" label="هل يفقد مكانه أثناء القراءة أو يتخطى السطور؟" />
+                      <YesNoToggle label="هل يخلط بين الحروف المتشابهة صوتاً أو شكلاً؟" value={formData.dyslexiaIndicators.mixesSimilarLetters} onChange={v => updateSection('dyslexiaIndicators', 'mixesSimilarLetters', v)} />
+                      <YesNoToggle label="هل يعاني من قلب الحروف (مثال: ب ↔️ د، 6 ↔️ 9)؟" value={formData.dyslexiaIndicators.reversesLetters} onChange={v => updateSection('dyslexiaIndicators', 'reversesLetters', v)} />
+                      <YesNoToggle label="هل يقرأ ببطء شديد وبتهجئة متقطعة؟" value={formData.dyslexiaIndicators.readsVerySlowly} onChange={v => updateSection('dyslexiaIndicators', 'readsVerySlowly', v)} />
+                      <YesNoToggle label="هل يفقد مكانه أثناء القراءة أو يتخطى السطور؟" value={formData.dyslexiaIndicators.losesPlaceWhileReading} onChange={v => updateSection('dyslexiaIndicators', 'losesPlaceWhileReading', v)} />
 
                       <h3 className="text-blue-400 font-bold text-xl mt-8">أسئلة خاصة بالكتابة (عسر الكتابة - Dysgraphia)</h3>
-                      <YesNoToggle section="dysgraphiaIndicators" field="illegibleHandwriting" label="هل يكتب بخط غير مفهوم أو سيء جداً؟" />
-                      <YesNoToggle section="dysgraphiaIndicators" field="frequentSpellingMistakes" label="هل تتكرر الأخطاء الإملائية حتى للكلمات المألوفة؟" />
-                      <YesNoToggle section="dysgraphiaIndicators" field="wrongPenGrip" label="هل يمسك القلم بطريقة غير صحيحة أو متشنجة؟" />
-                      <YesNoToggle section="dysgraphiaIndicators" field="writesSlowly" label="هل يكتب ببطء شديد ويبذل مجهوداً عالياً في الكتابة؟" />
-                      <YesNoToggle section="dysgraphiaIndicators" field="strugglesCopyingSentences" label="هل يعاني بشكل ملحوظ عند نسخ الجمل من السبورة؟" />
+                      <YesNoToggle label="هل يكتب بخط غير مفهوم أو سيء جداً؟" value={formData.dysgraphiaIndicators.illegibleHandwriting} onChange={v => updateSection('dysgraphiaIndicators', 'illegibleHandwriting', v)} />
+                      <YesNoToggle label="هل تتكرر الأخطاء الإملائية حتى للكلمات المألوفة؟" value={formData.dysgraphiaIndicators.frequentSpellingMistakes} onChange={v => updateSection('dysgraphiaIndicators', 'frequentSpellingMistakes', v)} />
+                      <YesNoToggle label="هل يمسك القلم بطريقة غير صحيحة أو متشنجة؟" value={formData.dysgraphiaIndicators.wrongPenGrip} onChange={v => updateSection('dysgraphiaIndicators', 'wrongPenGrip', v)} />
+                      <YesNoToggle label="هل يكتب ببطء شديد ويبذل مجهوداً عالياً في الكتابة؟" value={formData.dysgraphiaIndicators.writesSlowly} onChange={v => updateSection('dysgraphiaIndicators', 'writesSlowly', v)} />
+                      <YesNoToggle label="هل يعاني بشكل ملحوظ عند نسخ الجمل من السبورة؟" value={formData.dysgraphiaIndicators.strugglesCopyingSentences} onChange={v => updateSection('dysgraphiaIndicators', 'strugglesCopyingSentences', v)} />
 
                       <h3 className="text-blue-400 font-bold text-xl mt-8">أسئلة خاصة بالرياضيات (عسر الحساب - Dyscalculia)</h3>
-                      <YesNoToggle section="dyscalculiaIndicators" field="countingDifficulty" label="هل يواجه صعوبة في العد التسلسلي (تصاعدي، تنازلي)؟" />
-                      <YesNoToggle section="dyscalculiaIndicators" field="mixesNumbers" label="هل يخلط بين الأرقام (٧ و ٨، ٢ و ٦)؟" />
-                      <YesNoToggle section="dyscalculiaIndicators" field="basicOperationsDifficulty" label="هل يجد صعوبة في العمليات الأساسية البسيطة جداً؟" />
-                      <YesNoToggle section="dyscalculiaIndicators" field="getsLostSolvingMath" label="هل يتوه أو ينسى الخطوات أثناء حل المسائل متعددة الخطوات؟" />
-                      <YesNoToggle section="dyscalculiaIndicators" field="cantUnderstandSymbols" label="هل لا يستطيع التفريق أو فهم الرموز (+ - ÷ ×)؟" />
+                      <YesNoToggle label="هل يواجه صعوبة في العد التسلسلي (تصاعدي، تنازلي)؟" value={formData.dyscalculiaIndicators.countingDifficulty} onChange={v => updateSection('dyscalculiaIndicators', 'countingDifficulty', v)} />
+                      <YesNoToggle label="هل يخلط بين الأرقام (٧ و ٨، ٢ و ٦)؟" value={formData.dyscalculiaIndicators.mixesNumbers} onChange={v => updateSection('dyscalculiaIndicators', 'mixesNumbers', v)} />
+                      <YesNoToggle label="هل يجد صعوبة في العمليات الأساسية البسيطة جداً؟" value={formData.dyscalculiaIndicators.basicOperationsDifficulty} onChange={v => updateSection('dyscalculiaIndicators', 'basicOperationsDifficulty', v)} />
+                      <YesNoToggle label="هل يتوه أو ينسى الخطوات أثناء حل المسائل متعددة الخطوات؟" value={formData.dyscalculiaIndicators.getsLostSolvingMath} onChange={v => updateSection('dyscalculiaIndicators', 'getsLostSolvingMath', v)} />
+                      <YesNoToggle label="هل لا يستطيع التفريق أو فهم الرموز (+ - ÷ ×)؟" value={formData.dyscalculiaIndicators.cantUnderstandSymbols} onChange={v => updateSection('dyscalculiaIndicators', 'cantUnderstandSymbols', v)} />
                     </div>
                   )}
 
                   {currentStep === 7 && (
                     <div className="space-y-4">
                       <h3 className="text-rose-400 font-bold text-xl">المعلومات النفسية والعاطفية</h3>
-                      <YesNoToggle section="psychologicalInfo" field="anxiety" label="هل يعاني من التوتر والقلق العام؟" />
-                      <YesNoToggle section="psychologicalInfo" field="examFear" label="هل يخاف بشكل مفرط من الامتحانات؟" />
-                      <YesNoToggle section="psychologicalInfo" field="schoolEvasion" label="هل يتهرب أو يرفض الذهاب إلى المدرسة؟" />
-                      <YesNoToggle section="psychologicalInfo" field="feelsLessIntelligent" label="هل صرح أو يشعر بأنه 'أقل ذكاءً' من زملائه؟" />
-                      <YesNoToggle section="psychologicalInfo" field="bullied" label="هل يتعرض للتنمر من الآخرين بسبب مستواه الدراسي؟" />
-                      <YesNoToggle section="psychologicalInfo" field="selfConfidence" label="بشكل عام، هل تروا أن ثقته بنفسه جيدة؟" />
+                      <YesNoToggle label="هل يعاني من التوتر والقلق العام؟" value={formData.psychologicalInfo.anxiety} onChange={v => updateSection('psychologicalInfo', 'anxiety', v)} />
+                      <YesNoToggle label="هل يخاف بشكل مفرط من الامتحانات؟" value={formData.psychologicalInfo.examFear} onChange={v => updateSection('psychologicalInfo', 'examFear', v)} />
+                      <YesNoToggle label="هل يتهرب أو يرفض الذهاب إلى المدرسة؟" value={formData.psychologicalInfo.schoolEvasion} onChange={v => updateSection('psychologicalInfo', 'schoolEvasion', v)} />
+                      <YesNoToggle label="هل صرح أو يشعر بأنه 'أقل ذكاءً' من زملائه؟" value={formData.psychologicalInfo.feelsLessIntelligent} onChange={v => updateSection('psychologicalInfo', 'feelsLessIntelligent', v)} />
+                      <YesNoToggle label="هل يتعرض للتنمر من الآخرين بسبب مستواه الدراسي؟" value={formData.psychologicalInfo.bullied} onChange={v => updateSection('psychologicalInfo', 'bullied', v)} />
+                      <YesNoToggle label="بشكل عام، هل تروا أن ثقته بنفسه جيدة؟" value={formData.psychologicalInfo.selfConfidence} onChange={v => updateSection('psychologicalInfo', 'selfConfidence', v)} />
 
                       <div className="mt-12 bg-slate-800 p-6 rounded-3xl border-2 border-rose-500/50 shadow-2xl">
                         <h3 className="text-rose-400 font-black text-2xl mb-4">السؤال النهائي الأهم!</h3>
@@ -437,6 +388,50 @@ function CaseStudyContent() {
     </main>
   );
 }
+
+// Sub-components moved outside to maintain stable references
+const YesNoToggle = ({ value, onChange, label }: { value: string, onChange: (v: string) => void, label: string }) => {
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+      <span className="text-slate-200 font-medium mb-3 md:mb-0 text-lg">{label}</span>
+      <div className="flex bg-slate-900 rounded-xl overflow-hidden shadow-inner border border-slate-700">
+        <button 
+          onClick={() => onChange('yes')}
+          className={`px-6 py-2 font-bold transition-colors ${value === 'yes' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'}`}
+        >
+          نعم
+        </button>
+        <button 
+          onClick={() => onChange('sometimes')}
+          className={`px-6 py-2 font-bold border-x border-slate-700 transition-colors ${value === 'sometimes' ? 'bg-amber-500 text-white' : 'text-slate-400 hover:text-white'}`}
+        >
+          أحياناً
+        </button>
+        <button 
+          onClick={() => onChange('no')}
+          className={`px-6 py-2 font-bold transition-colors ${value === 'no' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-white'}`}
+        >
+          لا
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const InputField = ({ label, value, onChange, type = 'text', placeholder = '' }: { label: string, value: any, onChange: (v: string) => void, type?: string, placeholder?: string }) => {
+  return (
+    <div className="flex flex-col mb-4">
+      <label className="text-slate-300 font-bold mb-2 text-lg">{label}</label>
+      <input 
+        type={type} 
+        value={value || ''}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-cyan-500 transition-colors"
+      />
+    </div>
+  );
+};
 
 export default function CaseStudyPage() {
   return (

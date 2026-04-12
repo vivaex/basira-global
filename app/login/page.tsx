@@ -6,13 +6,107 @@ import Link from 'next/link';
 import NetworkBackground from '../components/layout/NetworkBackground';
 import { authService } from '../../lib/auth-service';
 import { syncAllData } from '../../lib/storage';
+import { StableFieldInput as FieldInput } from '../components/ui/FormElements';
+
+export const metadata = {
+  title: 'تسجيل الدخول | بَصيرة',
+  description: 'سجل دخولك إلى منظومة بصيرة للتشخيص الذكي ومتابعة التقارير الطبية.',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+// --- Stable Form Component ---
+function LoginForm({ 
+  onSubmit, 
+  loading, 
+  error, 
+  email, setEmail, 
+  password, setPassword 
+}: any) {
+  return (
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {error && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          style={{ 
+            color: '#ff4b4b', 
+            fontSize: '0.8rem', 
+            background: 'rgba(255,75,75,0.1)', 
+            padding: '0.75rem', 
+            borderRadius: '0.75rem',
+            border: '1px solid rgba(255,75,75,0.2)',
+            marginBottom: '0.5rem'
+          }}
+        >
+          {error}
+        </motion.div>
+      )}
+      
+      <FieldInput
+        type="email"
+        placeholder="البريد الإلكتروني..."
+        value={email}
+        onChange={setEmail}
+        id="email-input"
+        className="!mb-0"
+      />
+
+      <FieldInput
+        type="password"
+        placeholder="كلمة المرور..."
+        value={password}
+        onChange={setPassword}
+        id="password-input"
+        className="!mb-0"
+      />
+
+      <motion.button
+        id="login-submit-btn"
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.97 }}
+        type="submit"
+        disabled={loading || !email.trim() || !password.trim()}
+        style={{
+          width: '100%',
+          padding: '1.1rem',
+          background: (email.trim() && password.trim())
+            ? 'linear-gradient(135deg, var(--accent-cyan-dark), var(--accent-blue))'
+            : 'rgba(255,255,255,0.06)',
+          border: 'none',
+          borderRadius: '1.25rem',
+          color: (email.trim() && password.trim()) ? '#fff' : 'var(--text-muted)',
+          fontSize: '1.1rem',
+          fontWeight: 900,
+          fontStyle: 'italic',
+          cursor: (loading || !email.trim() || !password.trim()) ? 'not-allowed' : 'pointer',
+          transition: 'all 0.3s',
+          boxShadow: (email.trim() && password.trim()) ? '0 8px 32px rgba(6,182,212,0.35)' : 'none',
+          fontFamily: 'var(--font-arabic)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.75rem',
+          marginTop: '1rem'
+        }}
+      >
+        <span>{loading ? 'جاري التحقق...' : 'تفعيل المنظومة'}</span>
+        <span>{loading ? '⌛' : '🛡️'}</span>
+      </motion.button>
+    </form>
+  );
+}
 
 export default function LoginPortal() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [focused, setFocused] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -154,113 +248,13 @@ export default function LoginPortal() {
             أهلاً بك أيها البطل، عرِّفنا بنفسك للبدء.
           </p>
 
-          <form onSubmit={handleAccess} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                style={{ 
-                  color: '#ff4b4b', 
-                  fontSize: '0.8rem', 
-                  background: 'rgba(255,75,75,0.1)', 
-                  padding: '0.75rem', 
-                  borderRadius: '0.75rem',
-                  border: '1px solid rgba(255,75,75,0.2)',
-                  marginBottom: '0.5rem'
-                }}
-              >
-                {error}
-              </motion.div>
-            )}
-            
-            <div style={{ position: 'relative' }}>
-              <input
-                id="email-input"
-                type="email"
-                placeholder="البريد الإلكتروني..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setFocused('email')}
-                onBlur={() => setFocused(null)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(2,6,23,0.8)',
-                  border: `2px solid ${focused === 'email' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '1.25rem',
-                  padding: '1.1rem 1.5rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  outline: 'none',
-                  transition: 'border-color 0.3s, box-shadow 0.3s',
-                  fontFamily: 'var(--font-arabic)',
-                  boxShadow: focused === 'email' ? '0 0 24px rgba(6,182,212,0.15)' : 'none',
-                }}
-              />
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <input
-                id="password-input"
-                type="password"
-                placeholder="كلمة المرور..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setFocused('password')}
-                onBlur={() => setFocused(null)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(2,6,23,0.8)',
-                  border: `2px solid ${focused === 'password' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '1.25rem',
-                  padding: '1.1rem 1.5rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  outline: 'none',
-                  transition: 'border-color 0.3s, box-shadow 0.3s',
-                  fontFamily: 'var(--font-arabic)',
-                  boxShadow: focused === 'password' ? '0 0 24px rgba(6,182,212,0.15)' : 'none',
-                }}
-              />
-            </div>
-
-            <motion.button
-              id="login-submit-btn"
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              type="submit"
-              disabled={loading || !email.trim() || !password.trim()}
-              style={{
-                width: '100%',
-                padding: '1.1rem',
-                background: (email.trim() && password.trim())
-                  ? 'linear-gradient(135deg, var(--accent-cyan-dark), var(--accent-blue))'
-                  : 'rgba(255,255,255,0.06)',
-                border: 'none',
-                borderRadius: '1.25rem',
-                color: (email.trim() && password.trim()) ? '#fff' : 'var(--text-muted)',
-                fontSize: '1.1rem',
-                fontWeight: 900,
-                fontStyle: 'italic',
-                cursor: (loading || !email.trim() || !password.trim()) ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s',
-                boxShadow: (email.trim() && password.trim()) ? '0 8px 32px rgba(6,182,212,0.35)' : 'none',
-                fontFamily: 'var(--font-arabic)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem',
-              }}
-            >
-              <span>{loading ? 'جاري التحقق...' : 'تفعيل المنظومة'}</span>
-              <span>{loading ? '⌛' : '🛡️'}</span>
-            </motion.button>
-          </form>
+          <LoginForm
+            onSubmit={handleAccess}
+            loading={loading}
+            error={error}
+            email={email} setEmail={setEmail}
+            password={password} setPassword={setPassword}
+          />
 
           <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <Link href="/register" style={{ 

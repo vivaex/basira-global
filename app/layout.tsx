@@ -9,12 +9,13 @@ export const metadata: Metadata = {
   description: "بَصيرة — المركز الرقمي السيادي الأول من نوعه لتشخيص وعلاج صعوبات التعلم عند الأطفال بأدوات القرن الحادي والعشرين.",
   keywords: ["بصيرة", "صعوبات التعلم", "تشخيص", "أطفال", "التعليم الرقمي"],
   icons: { icon: "/favicon.ico" },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
