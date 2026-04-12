@@ -18,6 +18,11 @@ import {
 import { useLanguage } from '@/app/components/LanguageContext';
 import { useSound } from '@/hooks/useSound';
 import AliCharacter from '@/app/components/ui/AliCharacter';
+import { 
+  StableFieldInput as FieldInput, 
+  StableTriChoice as TriChoice, 
+  StableYesNoToggle as YesNo 
+} from '@/app/components/ui/FormElements';
 
 // ────────────────────────────────────────────────
 // Constants
