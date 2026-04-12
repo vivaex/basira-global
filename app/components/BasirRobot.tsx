@@ -163,7 +163,7 @@ export default function BasirRobot({
         {showDemo && demoSteps && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto"
+            className="fixed inset-0 z-[100] bg-slate-950/60 flex items-center justify-center p-6 pointer-events-auto"
           >
             <div className="bg-slate-900 border-2 border-cyan-500/30 rounded-[3rem] p-10 max-w-lg w-full shadow-2xl relative">
                <button 

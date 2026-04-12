@@ -50,7 +50,7 @@ export default function OnboardingTour() {
   if (!isVisible || step === -1) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center bg-black/40">
       <div className="pointer-events-auto">
         <BasirRobot 
           mood={tourSteps[step].mood as any} 

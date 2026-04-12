@@ -59,7 +59,7 @@ export default function DailyDrillView({ onClose }: { onClose?: () => void }) {
     <>
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl">
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-950/60">
             <GlassCard 
               variant="playful" 
               color="cyan" 
