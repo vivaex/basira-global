@@ -14,52 +14,32 @@ import { useTTS } from '@/hooks/useTTS';
  */
 
 const ELISION_STIMULI = [
-  // Level 1: Compound Words
-  { 
-    word: 'فراشة', // butterfly
-    instruction: 'قول "فراشة" بدون "فرا"', // Say 'Farasha' without 'Fara'
-    correct: 'شة',
-    options: ['شة', 'فة', 'رشة', 'راشة'],
-    difficulty: 1
-  },
-  { 
-    word: 'سيارة', // car
-    instruction: 'قول "سيارة" بدون "سي"', 
-    correct: 'يارة',
-    options: ['يارة', 'سارة', 'يارة', 'ارة'],
-    difficulty: 1
-  },
-  // Level 2: Syllable deletion
-  { 
-    word: 'مكتبة', // library
-    instruction: 'قول "مكتبة" بدون "مك"',
-    correct: 'تبة',
-    options: ['تبة', 'كتة', 'كبة', 'متبة'],
-    difficulty: 2
-  },
-  // Level 3: Phoneme deletion (Initial)
-  { 
-    word: 'فول', // Beans
-    instruction: 'قول "فول" بدون حرف "ف"', 
-    correct: 'ول',
-    options: ['ول', 'فل', 'لو', 'وو'],
-    difficulty: 3
-  },
-  { 
-    word: 'سماء', // Sky
-    instruction: 'قول "سماء" بدون حرف "س"', 
-    correct: 'ماء',
-    options: ['ماء', 'سما', 'ماء', 'ام'],
-    difficulty: 4
-  },
-  // Level 4: Phoneme deletion (Medial - Hardest)
-  { 
-    word: 'مدرسه', // School
-    instruction: 'قول "مدرسه" بدون حرف "د"', 
-    correct: 'مرسه',
-    options: ['مرسه', 'مدسة', 'درسة', 'مدسه'],
-    difficulty: 5
-  }
+  // Level 1: Compound & Simple Syllables (Diff 1)
+  { word: 'فراشة', instruction: 'قول "فراشة" بدون "فرا"', correct: 'شة', options: ['شة', 'فة', 'رشة', 'راشة'], difficulty: 1 },
+  { word: 'سيارة', instruction: 'قول "سيارة" بدون "سي"', correct: 'يارة', options: ['يارة', 'سارة', 'يارة', 'ارة'], difficulty: 1 },
+  { word: 'برتقال', instruction: 'قول "برتقال" بدون "بر"', correct: 'تقال', options: ['تقال', 'برقان', 'بقال', 'رتقال'], difficulty: 1 },
+  { word: 'كمبيوتر', instruction: 'قول "كمبيوتر" بدون "كم"', correct: 'بيوتر', options: ['بيوتر', 'موتر', 'بيتر', 'كمبيو'], difficulty: 1 },
+  { word: 'نافذة', instruction: 'قول "نافذة" بدون "نافـ"', correct: 'ذة', options: ['ذة', 'فاذة', 'ناذة', 'نافـ'], difficulty: 1 },
+  { word: 'تمساح', instruction: 'قول "تمساح" بدون "تمـ"', correct: 'ساح', options: ['ساح', 'تمسا', 'مساح', 'سا'], difficulty: 1 },
+  
+  // Level 2: Multiple Syllables (Diff 2)
+  { word: 'مكتبة', instruction: 'قول "مكتبة" بدون "مك"', correct: 'تبة', options: ['تبة', 'كتة', 'كبة', 'متبة'], difficulty: 2 },
+  { word: 'مسجد', instruction: 'قول "مسجد" بدون "مـ"', correct: 'سجد', options: ['سجد', 'مجد', 'سد', 'مسد'], difficulty: 2 },
+  { word: 'بستان', instruction: 'قول "بستان" بدون "بس"', correct: 'تان', options: ['تان', 'ستان', 'بسـ', 'بان'], difficulty: 2 },
+  { word: 'ميزان', instruction: 'قول "ميزان" بدون "ميـ"', correct: 'زان', options: ['زان', 'ميزا', 'ريزان', 'يزان'], difficulty: 2 },
+  { word: 'طائرة', instruction: 'قول "طائرة" بدون "طـ"', correct: 'ائرة', options: ['ائرة', 'طيرة', 'طارة', 'ئرة'], difficulty: 2 },
+
+  // Level 3: Initial Phonemes (Diff 3)
+  { word: 'فول', instruction: 'قول "فول" بدون حرف "ف"', correct: 'ول', options: ['ول', 'فل', 'لو', 'وو'], difficulty: 3 },
+  { word: 'قلم', instruction: 'قول "قلم" بدون حرف "ق"', correct: 'لم', options: ['لم', 'قل', 'قم', 'امل'], difficulty: 3 },
+  { word: 'سحاب', instruction: 'قول "سحاب" بدون حرف "س"', correct: 'حاب', options: ['حاب', 'سحا', 'حا', 'حسب'], difficulty: 3 },
+  { word: 'كتاب', instruction: 'قول "كتاب" بدون حرف "ك"', correct: 'تاب', options: ['تاب', 'با', 'كتب', 'كات'], difficulty: 3 },
+  { word: 'شجرة', instruction: 'قول "شجرة" بدون حرف "ش"', correct: 'جرة', options: ['جرة', 'شج', 'شة', 'رجة'], difficulty: 3 },
+  { word: 'كرسي', instruction: 'قول "كرسي" بدون حرف "ك"', correct: 'رسي', options: ['رسي', 'كورس', 'كور', 'سي'], difficulty: 3 },
+
+  // Level 4: Medial & Final Phonemes (Diff 4-5)
+  { word: 'سماء', instruction: 'قول "سماء" بدون حرف "س"', correct: 'ماء', options: ['ماء', 'سما', 'ماء', 'ام'], difficulty: 4 },
+  { word: 'مدرسه', instruction: 'قول "مدرسه" بدون حرف "د"', correct: 'مرسه', options: ['مرسه', 'مدسة', 'درسة', 'مدسه'], difficulty: 5 }
 ];
 
 export default function PhonemicAwarenessTest() {
@@ -87,6 +67,59 @@ function PhonemicAwarenessModule({ recordInteraction, difficulty, gameState }: a
   const [options, setOptions] = useState<string[]>([]);
   const trialStartRef = useRef<number>(0);
   const started = useRef(false);
+
+  // Speech Recognition State
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [micError, setMicError] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ar-SA';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => setIsRecording(true);
+        recognition.onend = () => setIsRecording(false);
+        recognition.onerror = () => {
+          setIsRecording(false);
+          setMicError(true);
+        };
+
+        recognition.onresult = (event: any) => {
+          const results = Array.from(event.results);
+          const text = results.map((r: any) => r[0].transcript).join('').trim();
+          setTranscript(text);
+          
+          // Auto-check if transcript matches correct answer
+          if (currentStimulus && text.includes(currentStimulus.correct)) {
+             handleAnswer(currentStimulus.correct);
+          }
+        };
+
+        recognitionRef.current = recognition;
+      } else {
+        setMicError(true);
+      }
+    }
+  }, [currentStimulus]);
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    } else {
+      setTranscript('');
+      try {
+        recognitionRef.current?.start();
+      } catch (e) {
+        console.error("Mic failed:", e);
+      }
+    }
+  };
 
   const spawnTrial = useCallback((diff: number) => {
     if (gameState !== 'playing') return;
@@ -144,22 +177,41 @@ function PhonemicAwarenessModule({ recordInteraction, difficulty, gameState }: a
         {currentStimulus && gameState === 'playing' && (
           <motion.div
             key={currentStimulus.word}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="mb-12 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="mb-12 text-center w-full max-w-2xl"
           >
-            <div className="text-8xl mb-6 drop-shadow-lg scale-110">🧩</div>
-            <h2 className="text-6xl font-black text-white mb-4 font-dyslexic bg-white/5 px-12 py-6 rounded-[3rem] border border-white/10 italic">
-              {currentStimulus.word}
-            </h2>
-            <div className="flex justify-center mt-6">
-               <button 
-                 onClick={() => speak(currentStimulus.instruction)}
-                 className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-purple-500/30 transition-all animate-pulse"
-               >
-                 <span>🔊 أعد التعليمات</span>
-               </button>
+            <div className="bg-slate-900/60 backdrop-blur-xl border-2 border-white/10 p-12 rounded-[4rem] relative overflow-hidden">
+               <div className="text-8xl mb-8 animate-float">🧩</div>
+               <h2 className="text-8xl font-black text-white mb-6 font-dyslexic italic tracking-tighter drop-shadow-2xl">
+                 {currentStimulus.word}
+               </h2>
+               
+               <div className="flex flex-col items-center gap-6">
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => speak(currentStimulus.instruction)}
+                      className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-8 py-3 rounded-2xl text-lg font-bold flex items-center gap-3 hover:bg-purple-500/30 transition-all active:scale-95"
+                    >
+                      <span>🔊 أعد التعليمات</span>
+                    </button>
+
+                    <button 
+                      onClick={toggleRecording}
+                      disabled={micError}
+                      className={`px-8 py-3 rounded-2xl text-lg font-black flex items-center gap-3 transition-all active:scale-95 border-2 ${isRecording ? 'bg-rose-500 border-rose-400 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30'}`}
+                    >
+                      {isRecording ? '⏹ توقف' : '🎤 قل الإجابة'}
+                    </button>
+                  </div>
+
+                  {transcript && (
+                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 p-4 bg-white/5 rounded-2xl border border-white/10 w-full">
+                        <p className="text-purple-400 font-mono text-xl italic">"{transcript}"</p>
+                     </motion.div>
+                  )}
+               </div>
             </div>
           </motion.div>
         )}

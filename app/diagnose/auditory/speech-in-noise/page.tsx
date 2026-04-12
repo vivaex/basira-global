@@ -15,10 +15,17 @@ import { useSound } from '@/hooks/useSound';
 
 const SIN_STIMULI = [
   { target: 'تفاحة', distractors: ['فلاحة', 'تمساح', 'مساحة'], noiseLevel: 0.1 },
-  { target: 'طائرة', distractors: ['دائرة', 'سائرة', 'طاولة'], noiseLevel: 0.3 },
-  { target: 'مفتاح', distractors: ['تمساح', 'تفاح', 'مصباح'], noiseLevel: 0.5 },
-  { target: 'بطريق', distractors: ['طريق', 'أبريق', 'مضيق'], noiseLevel: 0.7 },
-  { target: 'مدرسة', distractors: ['همسة', 'مِكنسة', 'هندسة'], noiseLevel: 0.9 },
+  { target: 'سيارة', distractors: ['طيارة', 'زيارة', 'منارة'], noiseLevel: 0.15 },
+  { target: 'طائرة', distractors: ['دائرة', 'سائرة', 'طاولة'], noiseLevel: 0.2 },
+  { target: 'قلم', distractors: ['علم', 'ألم', 'سلم'], noiseLevel: 0.25 },
+  { target: 'مفتاح', distractors: ['تمساح', 'تفاح', 'مصباح'], noiseLevel: 0.3 },
+  { target: 'بطريق', distractors: ['طريق', 'أبريق', 'مضيق'], noiseLevel: 0.4 },
+  { target: 'مدرسة', distractors: ['همسة', 'مِكنسة', 'هندسة'], noiseLevel: 0.5 },
+  { target: 'ساعة', distractors: ['قاعة', 'طاعة', 'براعة'], noiseLevel: 0.6 },
+  { target: 'كتاب', distractors: ['ذباب', 'باب', 'شراب'], noiseLevel: 0.7 },
+  { target: 'برتقال', distractors: ['أثقال', 'جبال', 'رمال'], noiseLevel: 0.8 },
+  { target: 'سكين', distractors: ['تين', 'عجين', 'يقين'], noiseLevel: 0.9 },
+  { target: 'حليب', distractors: ['قريب', 'غريب', 'صليب'], noiseLevel: 0.95 },
 ];
 
 export default function SpeechInNoiseTest() {
@@ -46,8 +53,11 @@ export default function SpeechInNoiseTest() {
   const playRound = useCallback(async (difficulty: number, gameState?: string) => {
     if (typeof window === 'undefined' || (gameState && gameState !== 'playing')) return;
     
-    // Select stimulus based on difficulty (1-10)
-    const idx = Math.min(SIN_STIMULI.length - 1, Math.floor(difficulty / 2));
+    // Selection logic: Pick from a range around the difficulty level for variety
+    // Difficulty is 1-5 from engine. Scale it to our 12 stimuli.
+    const baseIdx = Math.floor((difficulty - 1) * (SIN_STIMULI.length / 5));
+    const rangeSize = 3;
+    const idx = Math.min(SIN_STIMULI.length - 1, baseIdx + Math.floor(Math.random() * rangeSize));
     const stimulus = SIN_STIMULI[idx];
     setCurrentStimulus(stimulus);
     setOptions([stimulus.target, ...stimulus.distractors].sort(() => 0.5 - Math.random()));
@@ -93,7 +103,7 @@ export default function SpeechInNoiseTest() {
 
   }, [speak]);
 
-  const handleAnswer = (word: string, recordInteraction: any, gameState: string) => {
+  const handleAnswer = (word: string, recordInteraction: any, gameState: string, difficulty: number) => {
     if (isPlayingAudio || !currentStimulus) return;
     
     const isCorrect = word === currentStimulus.target;
@@ -113,7 +123,8 @@ export default function SpeechInNoiseTest() {
     });
 
     setTimeout(() => {
-      if (gameState === 'playing') playRound(1, gameState);
+      // Logic fix: pass the CURRENT difficulty prop from parent so it uses the right word index
+      if (gameState === 'playing') playRound(difficulty, gameState);
     }, 1500);
   };
 
@@ -162,7 +173,7 @@ export default function SpeechInNoiseTest() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={isPlayingAudio || gameState !== 'playing'}
-                  onClick={() => handleAnswer(opt, recordInteraction, gameState)}
+                  onClick={() => handleAnswer(opt, recordInteraction, gameState, difficulty)}
                   className={`h-24 bg-slate-900 border-4 border-slate-800 hover:border-cyan-500 rounded-[2rem] text-4xl font-black text-white transition-all shadow-xl ${isPlayingAudio ? 'opacity-50 cursor-wait' : ''}`}
                 >
                   {opt}

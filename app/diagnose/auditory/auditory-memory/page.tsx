@@ -46,9 +46,9 @@ export default function AuditoryMemoryTest() {
     for (const digit of seq) {
       setCurrentDigit(digit);
       speak(digit.toString());
-      await new Promise(r => setTimeout(r, 1200)); // Standard WISC interval (1s + overhead)
+      await new Promise(r => setTimeout(r, 1800)); // Increased interval for clinical clarity (Total ~2s)
       setCurrentDigit(null);
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 200));
     }
 
     setIsShowingSequence(false);

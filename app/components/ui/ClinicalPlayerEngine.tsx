@@ -180,59 +180,60 @@ export default function ClinicalPlayerEngine({
     const isCorrect = data.isCorrect ?? false;
     const now = Date.now();
     
-    // Rule 2: Complete Data Collection
-    const record: ResponseRecord = {
-      gameId: title,
-      domainId: domainId || category,
-      trialNumber: trialNumber,
-      itemDifficulty: difficulty,
-      timestampDisplayed: data.timestampDisplayed || (now - 2000), // Fallback
-      timestampFirstTouch: data.timestampFirstTouch || (now - 500),
-      timestampResponded: data.timestampResponded || now,
-      responseValue: data.responseValue,
-      isCorrect: isCorrect,
-      hesitationDuration: data.hesitationDuration || 0,
-      responseDuration: data.responseDuration || 0,
-      selfCorrected: data.selfCorrected || false,
-      metadata: data.metadata || {},
-    };
+    // Rule 2: Complete Data Collection (using functional update to ensure fresh state)
+    setInteractions(prev => {
+      const record: ResponseRecord = {
+        gameId: title,
+        domainId: domainId || category,
+        trialNumber: trialNumber,
+        itemDifficulty: difficulty,
+        timestampDisplayed: data.timestampDisplayed || (now - 2000),
+        timestampFirstTouch: data.timestampFirstTouch || (now - 500),
+        timestampResponded: data.timestampResponded || now,
+        responseValue: data.responseValue,
+        isCorrect: isCorrect,
+        hesitationDuration: data.hesitationDuration || 0,
+        responseDuration: data.responseDuration || 0,
+        selfCorrected: data.selfCorrected || false,
+        metadata: data.metadata || {},
+      };
 
-    // Calculate auto durations if missing
-    if (!record.hesitationDuration) record.hesitationDuration = record.timestampFirstTouch - record.timestampDisplayed;
-    if (!record.responseDuration) record.responseDuration = record.timestampResponded - record.timestampFirstTouch;
-
-    const newInteractions = [...interactions, record];
-    setInteractions(newInteractions);
+      // Calculate auto durations if missing
+      if (!record.hesitationDuration) record.hesitationDuration = record.timestampFirstTouch - record.timestampDisplayed;
+      if (!record.responseDuration) record.responseDuration = record.timestampResponded - record.timestampFirstTouch;
+      
+      return [...prev, record];
+    });
     
-    // Rule 3: IRT Adaptive (Rasch simple theta update)
-    let nextTheta = theta;
-    const expected = (1 / (1 + Math.exp(-theta + difficulty - 3))); // Sigmoid centered at difficulty
+    // Rule 3: IRT Adaptive (Rasch simple theta update) - functional update for theta
+    setTheta(prevTheta => {
+      const expected = (1 / (1 + Math.exp(-prevTheta + difficulty - 3)));
+      return isCorrect 
+        ? prevTheta + (0.5 / trialNumber) * (1 - expected)
+        : prevTheta + (0.5 / trialNumber) * (0 - expected);
+    });
     
     if (isCorrect) {
-      nextTheta += (0.5 / trialNumber) * (1 - expected);
       setScore(s => s + 1);
-      const nextCorrect = streak.correct + 1;
-      if (nextCorrect >= 2 && difficulty < 5) {
-        setDifficulty(d => d + 1);
-        setStreak({ correct: 0, incorrect: 0 });
-      } else {
-        setStreak({ correct: nextCorrect, incorrect: 0 });
-      }
+      setStreak(prev => {
+        const nextCorrect = prev.correct + 1;
+        if (nextCorrect >= 2 && difficulty < 5) {
+          setDifficulty(d => d + 1);
+          return { correct: 0, incorrect: 0 };
+        }
+        return { correct: nextCorrect, incorrect: 0 };
+      });
     } else {
-      nextTheta += (0.5 / trialNumber) * (0 - expected);
-      setScore(s => Math.max(0, s - 1));
-      const nextIncorrect = streak.incorrect + 1;
-      if (nextIncorrect >= 2 && difficulty > 1) {
-        setDifficulty(d => d - 1);
-        setStreak({ correct: 0, incorrect: 0 });
-      } else {
-        setStreak({ correct: 0, incorrect: nextIncorrect });
-      }
+      setStreak(prev => {
+        const nextIncorrect = prev.incorrect + 1;
+        if (nextIncorrect >= 2 && difficulty > 1) {
+          setDifficulty(d => d - 1);
+          return { correct: 0, incorrect: 0 };
+        }
+        return { correct: 0, incorrect: nextIncorrect };
+      });
     }
     
-    setTheta(nextTheta);
-    // trialNumber incremented below only once
-
     // Stop Conditions: Reduced counts for better UX
     const maxItemsMap = { A: 10, B: 15, C: 20 };
     if (trialNumber >= maxItemsMap[ageVersion]) {
@@ -240,7 +241,7 @@ export default function ClinicalPlayerEngine({
       return;
     }
     setTrialNumber(t => t + 1);
-  }, [trialNumber, difficulty, streak, theta, title, domainId, category, ageVersion, interactions, onGameOver]);
+  }, [trialNumber, difficulty, title, domainId, category, ageVersion, onGameOver]);
 
   useEffect(() => {
     if (gameState === 'playing' && timeLeft > 0) {
@@ -346,7 +347,15 @@ export default function ClinicalPlayerEngine({
                   <div className="flex items-center gap-8">
                     <div className="text-center">
                        <div className="text-[0.6rem] font-black text-slate-500 uppercase">{t('points')}</div>
-                       <div className={`text-4xl font-black italic ${color === 'rose' ? 'text-rose-400' : 'text-cyan-400'}`}>{score}</div>
+                       <motion.div 
+                          key={score}
+                          initial={{ scale: 0.8, opacity: 0.5 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                          className={`text-4xl font-black italic ${color === 'rose' ? 'text-rose-400' : 'text-cyan-400'}`}
+                       >
+                         {score}
+                       </motion.div>
                     </div>
                     {/* Timing Invisibility - Timer hidden from user but active in background */}
                  </div>

@@ -86,7 +86,10 @@ export default function FlexibilityTest() {
     }
 
     setTrialCount(prev => prev + 1);
-    setTimeout(generateTarget, 800);
+    
+    // Longer delay for errors to let child process the "Wrong" feedback
+    const nextTrialDelay = isCorrect ? 800 : 1500;
+    setTimeout(generateTarget, nextTrialDelay);
   };
 
   const options = [
@@ -110,15 +113,15 @@ export default function FlexibilityTest() {
       {({ recordInteraction, difficulty, gameState }: any) => (
         <div className="w-full flex flex-col items-center">
           
-          <div className="h-72 mb-16 relative w-full flex items-center justify-center">
+          <div className="h-80 mb-12 relative w-full flex items-center justify-center shrink-0">
              <AnimatePresence mode="wait">
                 {gameState === 'playing' && target.shape && (
                   <motion.div
                     key={`${trialCount}-${target.shape}`}
-                    initial={{ y: -100, opacity: 0, rotateY: 180 }}
+                    initial={{ y: -50, opacity: 0, rotateY: 180 }}
                     animate={{ y: 0, opacity: 1, rotateY: 0 }}
-                    exit={{ x: feedback === 'correct' ? 200 : -200, opacity: 0, rotate: feedback === 'correct' ? 20 : -20 }}
-                    transition={{ type: 'spring', damping: 20 }}
+                    exit={{ x: feedback === 'correct' ? 300 : -300, opacity: 0, rotate: feedback === 'correct' ? 20 : -20 }}
+                    transition={{ type: 'spring', damping: 15, stiffness: 100 }}
                     className={`bg-slate-900 w-48 h-64 rounded-[2.5rem] border-4 flex flex-col items-center justify-center gap-3 shadow-[0_30px_60px_rgba(0,0,0,0.5)] p-6 z-20 transition-colors duration-300 ${
                       feedback === 'correct' ? 'border-emerald-500 shadow-emerald-500/20 bg-emerald-950/20' : 
                       feedback === 'wrong' ? 'border-rose-500 shadow-rose-500/20 bg-rose-950/20' : 'border-white/10'
@@ -126,9 +129,19 @@ export default function FlexibilityTest() {
                   >
                      <div className="grid grid-cols-2 gap-3">
                         {Array.from({ length: target.count }).map((_, i) => (
-                          <span key={i} className="text-6xl drop-shadow-lg" style={{ color: target.color }}>{target.shape}</span>
+                          <span key={i} className="text-6xl drop-shadow-lg select-none" style={{ color: target.color }}>{target.shape}</span>
                         ))}
                      </div>
+                     
+                     {feedback !== 'none' && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`absolute -bottom-10 px-6 py-2 rounded-full text-sm font-black uppercase tracking-widest ${feedback === 'correct' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}
+                        >
+                          {feedback === 'correct' ? 'ممتاز!' : 'حاول مرة أخرى!'}
+                        </motion.div>
+                     )}
                   </motion.div>
                 )}
              </AnimatePresence>

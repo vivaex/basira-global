@@ -6,8 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getCaseStudy, saveCaseStudy, createEmptyCaseStudy, CaseStudy } from '@/lib/studentProfile';
 import Link from 'next/link';
 import { useLanguage } from '@/app/components/LanguageContext';
+import { Suspense } from 'react';
 
-export default function CaseStudyPage() {
+function CaseStudyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get('type');
@@ -434,5 +435,13 @@ export default function CaseStudyPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CaseStudyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">جاري تحميل المختبر...</div>}>
+      <CaseStudyContent />
+    </Suspense>
   );
 }

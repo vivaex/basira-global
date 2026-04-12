@@ -163,7 +163,7 @@ export function useTTS() {
         };
 
         speakNextChunk();
-      }, 250);
+      }, 50);
 
     } catch (error) {
       console.error('TTS Fail:', error);
