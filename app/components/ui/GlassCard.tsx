@@ -37,7 +37,7 @@ export default function GlassCard({
       transition={transition}
       whileHover={variant === 'playful' ? { scale: 1.02, y: -5 } : { y: -2 }}
       className={`
-        relative bg-slate-900/60 backdrop-blur-2xl border-2 
+        relative bg-slate-900/60 backdrop-blur-xl border-2 
         ${colorStyles[color]}
         ${className}
       `}
