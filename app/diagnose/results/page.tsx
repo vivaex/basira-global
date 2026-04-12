@@ -120,14 +120,18 @@ export default function RealTimeDiagnosticResults() {
     const writingScore   = avg('writingScore');
 
     // New Clinical Hubs (Averaged from multiple sub-tests)
-    const adhdClinicalScore        = avg('adhd_speed_trapScore', 'adhd_cptScore', 'adhdScore');
-    const autismClinicalScore      = avg('autism_emotionScore', 'autism_socialScore', 'autismScore');
-    const memoryProbClinicalScore  = avg('memory_prob_sequenceScore', 'memory_prob_digitScore', 'memory_probScore');
     const ldAlchemyScore           = getNum('ld_alchemyScore');
-    const socialRecScore           = getNum('autism_emotionScore'); // Match what was in ldClinicalScore approx
+    const socialRecScore           = getNum('autism_emotionScore'); 
     const empathyScore             = getNum('social_navigatorScore');
 
     const adhdClinicalScore        = avg('adhd_speed_trapScore', 'adhd_cptScore', 'adhdScore');
+    const autismClinicalScore      = avg('autism_emotionScore', 'autism_socialScore', 'autismScore');
+    const memoryProbClinicalScore  = avg('memory_prob_sequenceScore', 'memory_prob_digitScore', 'memory_probScore');
+    const anxietyClinicalScore     = avg('anxiety_shieldScore', 'anxiety_calmScore', 'anxietyScore');
+    const socialCommClinicalScore  = avg('social_navigatorScore', 'social_toneScore', 'social_commScore');
+    const attentionProbClinicalScore = avg('attention_prob_searchScore', 'attention_prob_trackingScore', 'attention_probScore');
+    const perceptionProbClinicalScore = avg('perception_prob_ghostScore', 'perception_prob_detailScore', 'perception_probScore');
+    const simpleLangClinicalScore  = avg('simple_lang_echoScore', 'simple_lang_namingScore', 'simple_langScore');
 
     const scoreMap: Record<string, number> = {
       math: mathScore, visual: visualScore, attention: attentionScore,
@@ -140,6 +144,13 @@ export default function RealTimeDiagnosticResults() {
       'social/social-recognition': socialRecScore || 0,
       'social/empathy-scenarios': empathyScore || 0,
       adhd: adhdClinicalScore,
+      attention_prob: attentionProbClinicalScore,
+      memory_prob: memoryProbClinicalScore,
+      perception_prob: perceptionProbClinicalScore,
+      simple_lang: simpleLangClinicalScore,
+      autism: autismClinicalScore,
+      social_comm: socialCommClinicalScore,
+      anxiety: anxietyClinicalScore,
     };
 
     // Also pull from saved sessions if score is 0
