@@ -52,6 +52,9 @@ const SUPERVISOR_TOOLS = [
   { id: '/clinician/dashboard', title: 'مركز الأخصائي', icon: '🏢', tag: 'ADMIN', color: 'indigo' as const, isExternal: true },
   { id: '/diagnose/teacher-form', title: 'استبيان المعلم', icon: '🏫', tag: 'SOCIAL', color: 'emerald' as const, isExternal: true },
   { id: '/diagnose/profile/developmental-history', title: 'التاريخ التطوري', icon: '👶', tag: 'CLINICAL', color: 'indigo' as const, isExternal: true },
+  { id: '/diagnose/start', title: 'دليل الأهل', icon: '🗺️', tag: 'GUIDE', color: 'cyan' as const, isExternal: true },
+  { id: '/diagnose/progress', title: 'لوحة التقدم', icon: '📈', tag: 'ANALYTICS', color: 'indigo' as const, isExternal: true },
+  { id: '/diagnose/kid-mode', title: 'وضع الطفل', icon: '🦸', tag: 'KID', color: 'amber' as const, isExternal: true },
 ];
 
 const PRELIMINARY_LABS = [

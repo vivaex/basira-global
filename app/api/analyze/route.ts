@@ -99,13 +99,19 @@ export async function POST(req: NextRequest) {
       studentProfile,
       sessions,
       caseStudy,
+      teacherFormScore,
+      developmentalHistory,
+      workingMemory,
     }: {
       name: string;
       childResults: any[];
       parentStats: any[];
-      studentProfile?: StudentProfile | null;
-      sessions?: TestSession[];
-      caseStudy?: CaseStudy | null;
+      studentProfile?: any;
+      sessions?: any[];
+      caseStudy?: any;
+      teacherFormScore?: number;
+      developmentalHistory?: Record<string, string> | null;
+      workingMemory?: { digitForwardScore?: number; digitForwardMaxSpan?: number; digitBackwardScore?: number; digitBackwardMaxSpan?: number } | null;
     } = body;
 
     // Build enriched context strings
@@ -127,6 +133,38 @@ export async function POST(req: NextRequest) {
       generationConfig: { responseMimeType: 'application/json' },
     });
 
+    // ── Build extra clinical inputs ──────────────────────────
+    let workingMemorySummary = 'لم يتم إجراء اختبارات الذاكرة العاملة.';
+    if (workingMemory && (workingMemory.digitForwardScore || workingMemory.digitBackwardScore)) {
+      const lines = [];
+      if (workingMemory.digitForwardScore) {
+        lines.push(`الأرقام الأمامية (Digit Span Forward): ${workingMemory.digitForwardScore}% | الحد الأقصى المُستعاد: ${workingMemory.digitForwardMaxSpan ?? '?'} أرقام`);
+        lines.push(`  المرجع: الطفل العادي (8 سنوات) = 5-6 أرقام أمامية (WISC-V)`);
+      }
+      if (workingMemory.digitBackwardScore) {
+        lines.push(`الأرقام المعكوسة (Digit Span Backward): ${workingMemory.digitBackwardScore}% | الحد الأقصى المُستعاد: ${workingMemory.digitBackwardMaxSpan ?? '?'} أرقام`);
+        lines.push(`  المرجع: الطفل العادي (8 سنوات) = 3-4 أرقام معكوسة (WISC-V)`);
+      }
+      workingMemorySummary = lines.join('\n');
+    }
+
+    let teacherSummary = 'لم يُكمل المعلم التقييم.';
+    if (teacherFormScore !== undefined && teacherFormScore !== null) {
+      teacherSummary = `مجموع نقاط مخاوف الصف: ${teacherFormScore}%\n  (0-30%: لا مخاوف ملحوظة | 31-60%: مخاوف متوسطة | 61-100%: مخاوف شديدة تستوجب متابعة Conners-3)`;
+    }
+
+    let devHistorySummary = 'لم يتم تعبئة التاريخ التطوري.';
+    if (developmentalHistory && Object.keys(developmentalHistory).length > 0) {
+      const sections: string[] = [];
+      const dh = developmentalHistory as any;
+      if (dh.birthWeek) sections.push(`أسبوع الولادة: ${dh.birthWeek} | وزن: ${dh.birthWeight ?? '?'} كغ | ولادة قيصرية: ${dh.cesarean ?? '?'}`);
+      if (dh.oxygenDeprivation) sections.push(`نقص أكسجين: ${dh.oxygenDeprivation} | اصفرار: ${dh.jaundice ?? '?'} | إقامة حضانة: ${dh.nicuStay ?? '?'}`);
+      if (dh.walkingAge) sections.push(`سن المشي: ${dh.walkingAge} | كلمات أولى: ${dh.firstWordsAge ?? '?'} | جمل: ${dh.sentenceAge ?? '?'}`);
+      if (dh.familyHistory) sections.push(`تاريخ عائلي: ${dh.familyHistory}`);
+      if (dh.vaccines) sections.push(`التطعيمات: ${dh.vaccines} | مرضى مزمن: ${dh.chronicIllness ?? '?'}`);
+      devHistorySummary = sections.join('\n');
+    }
+
     const prompt = `
 أنت خبير إكلينيكي وتشخيصي في "منظومة بصيرة" (Basira).
 تخصصك: تشخيص صعوبات التعلم، ADHD، والتقييمات النمائية العصبية بمعايير DSM-5، WIAT، WISC، CTOPP، وأطر Orton-Gillingham.
@@ -140,6 +178,21 @@ ${profileSummary}
 🔷 دراسة الحالة السريرية المعمقة (Anamnesis - مدخلات الأهل):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${caseStudySummary}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔷 التاريخ التطوري والنمائي (DSM-5-TR Developmental History):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${devHistorySummary}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔷 الذاكرة العاملة — WISC-V Working Memory Index (WMI):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${workingMemorySummary}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔷 تقييم المعلم — Conners-3 Teacher Form:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${teacherSummary}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔷 نتائج مختبرات بصيرة (الأداء الفعلي للطالب - Machine Data):

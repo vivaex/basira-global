@@ -18,6 +18,8 @@ export interface PDFReportData {
   domainScores: { id: string; title: string; score: number; status: string; icon: string }[];
   parentStats?: { label: string; val: number }[];
   teacherFormScore?: number | null;
+  digitForwardScore?: number | null;
+  digitForwardMaxSpan?: number | null;
   digitBackwardScore?: number | null;
   digitBackwardMaxSpan?: number | null;
 
@@ -319,6 +321,14 @@ export async function generateClinicalPDF(data: PDFReportData): Promise<void> {
   }
 
   // ── Digit Backward ──────────────────────────────────────────────
+
+  if (data.digitForwardScore !== null && data.digitForwardScore !== undefined) {
+    checkPageBreak(20);
+    addSection('DIGIT SPAN FORWARD (WISC-V WMI) | الأرقام الأمامية', '➡️');
+    addText(`Accuracy: ${data.digitForwardScore}% | Max span: ${data.digitForwardMaxSpan ?? '?'} digits`, 9);
+    addText('Reference: Age 8 average = 5-6 digits forward (WISC-V Normative Data)', 8, [100, 116, 139]);
+    y += 2;
+  }
 
   if (data.digitBackwardScore !== null && data.digitBackwardScore !== undefined) {
     checkPageBreak(20);
