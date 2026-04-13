@@ -6,7 +6,7 @@ import { apiGuard } from '@/lib/apiGuard';
 // مساعد بصيرة الذكي للأهل — Powered by Gemini
 // ──────────────────────────────────────────────────────────────
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export async function POST(req: NextRequest) {
   // Apply security guard (rate limiting, origin check)
