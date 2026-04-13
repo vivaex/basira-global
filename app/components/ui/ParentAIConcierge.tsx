@@ -111,8 +111,8 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
 
     try {
       const conversationHistory = newMessages.map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
       }));
 
       const res = await fetch('/api/parent-chat', {
@@ -126,7 +126,17 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'فشل الاتصال بمحرك الذكاء الاصطناعي');
+      
+      if (!res.ok) {
+        // Handle specific status codes with better Arabic messages
+        if (res.status === 429) {
+          throw new Error('تم تجاوز حصة الاستخدام (Quota). يرجى الانتظار دقيقة واحدة ثم المحاولة.');
+        }
+        if (res.status === 403) {
+          throw new Error('تم حظر الاتصال لأسباب أمنية (Security Block). يرجى التأكد من رابط الموقع.');
+        }
+        throw new Error(data.error || 'فشل الاتصال بمحرك الذكاء الاصطناعي');
+      }
 
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -136,7 +146,7 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
     } catch (err: any) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `⚠️ ${err.message}`,
+        content: `⚠️ عفواً: ${err.message}`,
         timestamp: new Date()
       }]);
     } finally {

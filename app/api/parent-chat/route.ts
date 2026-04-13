@@ -1,103 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { apiGuard } from '@/lib/apiGuard';
 
 // ──────────────────────────────────────────────────────────────
 // API Route: /api/parent-chat
-// مساعد بصيرة الذكي للأهل — Powered by Gemini
+// مساعد بصيرة الذكي للأهل — Powered by Gemini SDK
 // ──────────────────────────────────────────────────────────────
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-
 export async function POST(req: NextRequest) {
-  // Apply security guard (rate limiting, origin check)
+  // 1. Apply security guard (rate limiting, origin check)
   const guard = await apiGuard(req);
   if (!guard.ok) {
     return NextResponse.json({ error: guard.error }, { status: guard.status ?? 429 });
   }
 
+  // 2. Select the best available API Key
   const apiKey = process.env.CHATBOT_GEMINI_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'مفتاح الذكاء الاصطناعي غير متوفر' }, { status: 500 });
+    return NextResponse.json({ error: 'مفتاح الذكاء الاصطناعي غير متوفر في الإعدادات' }, { status: 500 });
   }
-
-
-  let body: { context: string; history: any[]; message: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: 'طلب غير صالح' }, { status: 400 });
-  }
-
-  const { context, history, message } = body;
-
-  if (!message || typeof message !== 'string' || message.length > 800) {
-    return NextResponse.json({ error: 'رسالة غير صالحة' }, { status: 400 });
-  }
-
-  // Build conversation for Gemini: inject system context into the first turn
-  const systemPreamble = {
-    role: 'user',
-    parts: [{ text: `[SYSTEM CONTEXT - لا تذكر هذا للمستخدم]\n${context}` }]
-  };
-  const systemAck = {
-    role: 'model',
-    parts: [{ text: 'فهمت. أنا جاهز لمساعدة الأهل بناءً على نتائج الطفل المقدمة.' }]
-  };
-
-  // Filter history to exclude the very first greeting pair we injected
-  const conversationHistory = history.length > 1 ? history.slice(1) : [];
-
-  const contents = [
-    systemPreamble,
-    systemAck,
-    ...conversationHistory,
-    { role: 'user', parts: [{ text: message }] }
-  ];
 
   try {
-    console.log(`[ParentChat] New request for child: ${context.split('\n').find(l => l.includes('الاسم'))?.split(':')[1]?.trim()}`);
-    
-    const geminiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 500,
-          topP: 0.9,
-        },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        ],
-      }),
-    });
+    const { context, history, message } = await req.json();
 
-    const data = await geminiRes.json();
-
-    if (!geminiRes.ok) {
-      console.error('[ParentChat] Gemini API Error:', JSON.stringify(data, null, 2));
-      return NextResponse.json({ 
-        error: `خطأ في محرك الذكاء الاصطناعي (${GEMINI_API_URL.split('/').pop()?.split(':')[0]}): ${data.error?.message || 'فشل غير معروف'}`,
-        debug: data.error
-      }, { status: geminiRes.status });
+    if (!message || typeof message !== 'string' || message.length > 1000) {
+      return NextResponse.json({ error: 'رسالة غير صالحة أو طويلة جداً' }, { status: 400 });
     }
 
+    // 3. Initialize Gemini SDK
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      systemInstruction: context, // Use the context as a system instruction if supported, or prepended text
+    });
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    // 4. Start Chat with history
+    const chat = model.startChat({
+      history: history.map((m: any) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.parts?.[0]?.text || m.content || '' }],
+      })),
+      generationConfig: {
+        maxOutputTokens: 800,
+        temperature: 0.7,
+      },
+    });
+
+    const result = await chat.sendMessage(message);
+    const reply = result.response.text();
+
     if (!reply) {
-      console.error('[ParentChat] No reply in Gemini response:', JSON.stringify(data, null, 2));
-      throw new Error('لم يتم استلام رد صالح من المحرك. قد يكون السبب قيود السلامة.');
+      throw new Error('لم يتم توليد رد. قد يكون السبب قيود الحماية التلقائية.');
     }
 
     return NextResponse.json({ reply });
-  } catch (err: any) {
-    console.error('[ParentChat] Exception:', err);
-    return NextResponse.json(
-      { error: `عذراً، حدث خطأ تقني: ${err.message}` },
-      { status: 500 }
-    );
+
+  } catch (error: any) {
+    console.error('[ParentChat] SDK Error:', error);
+    
+    // Handle specific Quota/Rate Limit error from SDK
+    if (error.message?.includes('429') || error.message?.includes('quota')) {
+      return NextResponse.json({ 
+        error: 'تم تجاوز حصة الاستخدام المؤقتة (Quota Exceeded). يُرجى الانتظار دقيقة واحدة ثم المحاولة.' 
+      }, { status: 429 });
+    }
+
+    return NextResponse.json({ 
+      error: `عذراً، حدث خطأ في التواصل مع المحرك: ${error.message}` 
+    }, { status: 500 });
   }
 }
 
