@@ -6,7 +6,7 @@ import { apiGuard } from '@/lib/apiGuard';
 // مساعد بصيرة الذكي للأهل — Powered by Gemini
 // ──────────────────────────────────────────────────────────────
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
 export async function POST(req: NextRequest) {
   // Apply security guard (rate limiting, origin check)
@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: guard.error }, { status: guard.status ?? 429 });
   }
 
-
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.CHATBOT_GEMINI_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'مفتاح الذكاء الاصطناعي غير متوفر' }, { status: 500 });
   }
+
 
   let body: { context: string; history: any[]; message: string };
   try {
