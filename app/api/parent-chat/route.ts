@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
   ];
 
   try {
+    console.log(`[ParentChat] New request for child: ${context.split('\n').find(l => l.includes('الاسم'))?.split(':')[1]?.trim()}`);
+    
     const geminiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
         contents,
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 350,
+          maxOutputTokens: 500,
           topP: 0.9,
         },
         safetySettings: [
@@ -75,19 +77,26 @@ export async function POST(req: NextRequest) {
     const data = await geminiRes.json();
 
     if (!geminiRes.ok) {
-      console.error('Gemini error:', data);
-      throw new Error(data.error?.message || 'فشل الاتصال بالذكاء الاصطناعي');
+      console.error('[ParentChat] Gemini API Error:', JSON.stringify(data, null, 2));
+      return NextResponse.json({ 
+        error: `خطأ في محرك الذكاء الاصطناعي: ${data.error?.message || 'فشل غير معروف'}`,
+        debug: data.error
+      }, { status: geminiRes.status });
     }
 
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!reply) throw new Error('لم يتم استلام رد من الذكاء الاصطناعي');
+    if (!reply) {
+      console.error('[ParentChat] No reply in Gemini response:', JSON.stringify(data, null, 2));
+      throw new Error('لم يتم استلام رد صالح من المحرك. قد يكون السبب قيود السلامة.');
+    }
 
     return NextResponse.json({ reply });
   } catch (err: any) {
-    console.error('Parent chat error:', err.message);
+    console.error('[ParentChat] Exception:', err);
     return NextResponse.json(
-      { error: err.message || 'حدث خطأ غير متوقع' },
+      { error: `عذراً، حدث خطأ تقني: ${err.message}` },
       { status: 500 }
     );
   }
 }
+

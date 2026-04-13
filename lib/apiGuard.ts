@@ -55,11 +55,17 @@ function checkOrigin(req: NextRequest): boolean {
 
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'https://basira-global.vercel.app',
     // أضف domain عيادتك هنا
   ];
 
-  return allowedOrigins.some(allowed => origin.startsWith(allowed));
+  const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed));
+  if (!isAllowed) {
+    console.warn(`[apiGuard] Blocked request from unauthorized origin: ${origin}`);
+  }
+  return isAllowed;
+
 }
 
 /**

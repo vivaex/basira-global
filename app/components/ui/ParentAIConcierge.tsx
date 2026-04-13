@@ -126,7 +126,7 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'حدث خطأ في الاتصال');
+      if (!res.ok) throw new Error(data.error || 'فشل الاتصال بمحرك الذكاء الاصطناعي');
 
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -136,7 +136,7 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
     } catch (err: any) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مجدداً.',
+        content: `⚠️ ${err.message}`,
         timestamp: new Date()
       }]);
     } finally {
