@@ -56,13 +56,17 @@ function checkOrigin(req: NextRequest): boolean {
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:3001',
     'https://basira-global.vercel.app',
-    // أضف domain عيادتك هنا
   ];
 
-  const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed));
+  if (!origin) return true;
+  
+  const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed)) || 
+                    origin.endsWith('.vercel.app'); // السماح بجميع النطاقات الفرعية لفيرسل
+
   if (!isAllowed) {
-    console.warn(`[apiGuard] Blocked request from unauthorized origin: ${origin}`);
+    console.warn(`[apiGuard] Security Block: Request from unauthorized origin: ${origin}`);
   }
   return isAllowed;
 
