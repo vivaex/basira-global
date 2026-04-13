@@ -14,36 +14,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: guard.error }, { status: guard.status ?? 429 });
   }
 
-  // 2. Select the best available API Key
-  const apiKey = process.env.CHATBOT_GEMINI_KEY || process.env.GEMINI_API_KEY;
+  // 2. Select the API Key (Matching the working analyze route)
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'مفتاح الذكاء الاصطناعي غير متوفر في الإعدادات' }, { status: 500 });
+    return NextResponse.json({ error: 'GEMINI_API_KEY is missing in Vercel settings' }, { status: 500 });
   }
 
   try {
     const { context, history, message } = await req.json();
 
-    if (!message || typeof message !== 'string' || message.length > 1000) {
-      return NextResponse.json({ error: 'رسالة غير صالحة أو طويلة جداً' }, { status: 400 });
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Invalid message' }, { status: 400 });
     }
 
-    // 3. Initialize Gemini SDK
+    // 3. Initialize Gemini SDK (Using the exact same config as the working report)
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
-      systemInstruction: context, // Use the context as a system instruction if supported, or prepended text
+      model: 'gemini-2.5-flash', 
     });
 
-    // 4. Start Chat with history
+    // 4. Start Chat (Simplified to standard SDK patterns)
     const chat = model.startChat({
-      history: history.map((m: any) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.parts?.[0]?.text || m.content || '' }],
-      })),
-      generationConfig: {
-        maxOutputTokens: 800,
-        temperature: 0.7,
-      },
+      history: [
+        { role: 'user', parts: [{ text: `CONTEXT:\n${context}` }] },
+        { role: 'model', parts: [{ text: 'OK. I am Basira Assistant. I will help the parents based on this context.' }] },
+        ...history.map((m: any) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content || '' }],
+        })),
+      ],
     });
 
     const result = await chat.sendMessage(message);

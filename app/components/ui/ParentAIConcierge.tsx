@@ -109,6 +109,8 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
     setMessages(newMessages);
     setIsTyping(true);
 
+    console.log('[ParentChat] Attempting to send message:', userMessage);
+
     try {
       const conversationHistory = newMessages.map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
@@ -126,16 +128,14 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
       });
 
       const data = await res.json();
+      console.log('[ParentChat] Response status:', res.status, data);
       
       if (!res.ok) {
-        // Handle specific status codes with better Arabic messages
-        if (res.status === 429) {
-          throw new Error('تم تجاوز حصة الاستخدام (Quota). يرجى الانتظار دقيقة واحدة ثم المحاولة.');
-        }
-        if (res.status === 403) {
-          throw new Error('تم حظر الاتصال لأسباب أمنية (Security Block). يرجى التأكد من رابط الموقع.');
-        }
-        throw new Error(data.error || 'فشل الاتصال بمحرك الذكاء الاصطناعي');
+        let errorMsg = data.error || 'فشل الاتصال';
+        if (res.status === 429) errorMsg = 'تجاوز حصة الاستخدام (Quota 429).';
+        if (res.status === 403) errorMsg = 'حظر أمني (Security 403).';
+        
+        throw new Error(`${errorMsg} (Code: ${res.status})`);
       }
 
       setMessages(prev => [...prev, {
@@ -144,6 +144,7 @@ ${aiReport ? `التحليل السريري الذكي: ${JSON.stringify(aiRepor
         timestamp: new Date()
       }]);
     } catch (err: any) {
+      console.error('[ParentChat] Error in sendMessage:', err);
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: `⚠️ عفواً: ${err.message}`,
