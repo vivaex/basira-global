@@ -6,7 +6,7 @@ import { apiGuard } from '@/lib/apiGuard';
 // مساعد بصيرة الذكي للأهل — Powered by Gemini
 // ──────────────────────────────────────────────────────────────
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export async function POST(req: NextRequest) {
   // Apply security guard (rate limiting, origin check)
@@ -79,10 +79,11 @@ export async function POST(req: NextRequest) {
     if (!geminiRes.ok) {
       console.error('[ParentChat] Gemini API Error:', JSON.stringify(data, null, 2));
       return NextResponse.json({ 
-        error: `خطأ في محرك الذكاء الاصطناعي: ${data.error?.message || 'فشل غير معروف'}`,
+        error: `خطأ في محرك الذكاء الاصطناعي (${GEMINI_API_URL.split('/').pop()?.split(':')[0]}): ${data.error?.message || 'فشل غير معروف'}`,
         debug: data.error
       }, { status: geminiRes.status });
     }
+
 
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!reply) {
