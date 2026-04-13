@@ -15,6 +15,8 @@ import {
 } from '@/lib/studentProfile';
 import AliCharacter from '@/app/components/ui/AliCharacter';
 import PDFReportButton from '@/app/components/ui/PDFReportButton';
+import ParentAIConcierge from '@/app/components/ui/ParentAIConcierge';
+
 
 const isValid = (n: any): n is number => typeof n === 'number' && !isNaN(n);
 
@@ -789,6 +791,14 @@ export default function RealTimeDiagnosticResults() {
         </footer>
 
       </div>
+
+      {/* مساعد بصيرة الذكي للأهل */}
+      <ParentAIConcierge
+        childName={name}
+        childResults={childResults}
+        studentProfile={studentProfile}
+        aiReport={aiReport}
+      />
     </main>
   );
 }

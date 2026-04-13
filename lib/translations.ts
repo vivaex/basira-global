@@ -325,7 +325,6 @@ export const translations: Record<Language, any> = {
     'cat_autism': 'Autism Spectrum',
     'cat_social_comm': 'Social Communication',
     'cat_anxiety': 'Anxiety Disorder',
-    'cat_memory-test/digit-backward': 'Digit Span Backward (WISC-V)',
     supervisor_tools: 'Supervisor & Clinician Tools',
     clinician_hub: 'Advanced Clinician Hub',
     dev_history_short: 'Dev. History',
@@ -333,6 +332,7 @@ export const translations: Record<Language, any> = {
 
 
     // Parent Dashboard
+
     parent_dashboard: 'Parent Dashboard',
     ai_clinician_subtitle: 'Continuous monitoring and AI-driven clinical recommendations for Hero:',
     export_pdf: 'Export PDF Report',
