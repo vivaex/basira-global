@@ -17,6 +17,10 @@ export const KEYS = {
   CASE_STUDY:'basira_clinical_case_study',
 } as const;
 
+export function generateSessionId(): string {
+  return crypto.randomUUID();
+}
+
 // ── Profile Management ───────────────────────
 
 export function getLevelFromXP(xp: number) {
@@ -156,6 +160,56 @@ export function createEmptyProfile(): StudentProfile {
       anxietyDisorder: false,
       specialDisabilityNotes: '',
     },
+  };
+}
+
+export function createEmptyCaseStudy(): CaseStudy {
+  return {
+    profileId: '',
+    generalInfo: {
+      informantName: '',
+      informantRelationship: '',
+      reasonForReferral: '',
+      clientStrength: '',
+      clientChallenges: '',
+    },
+    medicalHistory: {
+      pregnancyComplications: false,
+      birthComplications: false,
+      chronicIllnesses: '',
+      currentMedications: '',
+      visionIssues: false,
+      hearingIssues: false,
+    },
+    developmentalHistory: {
+      walkingAge: '',
+      talkingAge: '',
+      toiletTrainingAge: '',
+      motorCoordination: 'average',
+    },
+    academicHistory: {
+      currentSchool: '',
+      currentGrade: '',
+      repeatingGrades: false,
+      favouriteSubjects: [],
+      difficultSubjects: [],
+    },
+    behaviorAttention: {
+      easilyDistracted: false,
+      impulsive: false,
+      aggressiveBehavior: false,
+      socialInteraction: 'average',
+    },
+    familyBackground: {
+      livingArrangement: '',
+      siblingCount: 0,
+      familyLearningDifficulties: false,
+    },
+    psychologicalInfo: {
+      previousAssessments: '',
+      therapiesReceived: '',
+    },
+    completedAt: new Date().toISOString()
   };
 }
 

@@ -700,7 +700,8 @@ export default function RealTimeDiagnosticResults() {
                   </button>
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
           </div>
         )}
