@@ -71,6 +71,17 @@ const STEPS = [
     duration: '5 دقائق',
     required: false,
   },
+  {
+    id: 'final-results',
+    title: 'النتائج وخطة التنفيذ',
+    subtitle: 'التقرير السريري + المهام العلاجية الذكية',
+    icon: '🚀',
+    href: '/diagnose/results',
+    storageKey: 'aiReportGenerated',
+    color: 'violet',
+    duration: 'فوري',
+    required: true,
+  },
 ];
 
 const COLOR_MAP: Record<string, { bg: string; border: string; text: string; glow: string }> = {

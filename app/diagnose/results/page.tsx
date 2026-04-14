@@ -275,6 +275,9 @@ export default function RealTimeDiagnosticResults() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'حدث خطأ أثناء التواصل مع الذكاء الاصطناعي.');
       setAiReport(data);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aiReportGenerated', 'true');
+      }
     } catch (err: any) {
       setApiError(err.message);
     } finally {
@@ -607,11 +610,25 @@ export default function RealTimeDiagnosticResults() {
               </section>
             )}
 
-            {/* القسم 5: الخطة العلاجية */}
-            <section className="mb-16 bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-500/50 p-14 rounded-[5rem] shadow-[0_0_60px_rgba(99,102,241,0.2)]">
-              <h2 className="text-4xl font-black italic mb-12 text-white flex items-center gap-4">
-                <span className="text-5xl">🚀</span> خامساً: خارطة الطريق المقترحة
-              </h2>
+            {/* ═══ الخطوة الثالثة: مركز التنفيذ الذكي ═══ */}
+            <section className="mt-20 border-t-4 border-indigo-500/30 pt-16">
+              <div className="flex flex-col md:flex-row items-center gap-6 mb-16">
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] flex items-center justify-center text-5xl shadow-[0_0_40px_rgba(99,102,241,0.4)]">
+                  🚀
+                </div>
+                <div>
+                  <div className="text-sm font-mono tracking-[0.5em] text-indigo-400 mb-2 uppercase">Journey Phase: 03</div>
+                  <h2 className="text-5xl font-black italic text-white">الخطوة الثالثة: دليلك العملي للتنفيذ</h2>
+                  <p className="text-slate-400 text-xl italic mt-2">تحويل التشخيص إلى خطة عمل واقعية للأسبوع الأول</p>
+                </div>
+              </div>
+
+              {/* القسم 5: الخطة العلاجية */}
+              <div className="mb-16 bg-slate-900/40 border border-indigo-500/20 p-8 md:p-14 rounded-[4rem] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] pointer-events-none" />
+                <h2 className="text-3xl font-black italic mb-12 text-indigo-300 flex items-center gap-4">
+                  <span>🗺️</span> خارطة الطريق المقترحة (Roadmap)
+                </h2>
               <div className="space-y-6">
                 {aiReport.treatmentPlan?.map((plan: any, i: number) => (
                   <div key={i} className="bg-black/40 p-8 rounded-3xl border-l-4 border-indigo-400 flex flex-col md:flex-row gap-4">
@@ -629,71 +646,61 @@ export default function RealTimeDiagnosticResults() {
                   </div>
                 ))}
               </div>
+
+              {/* بطاقات دليل الأهل والمعلم */}
+              <div className="mt-12 grid md:grid-cols-2 gap-8">
+                {/* دليل المنزل */}
+                {aiReport.parentGuide && (
+                  <div className="bg-cyan-500/5 border border-cyan-500/20 p-8 rounded-[3rem]">
+                     <h4 className="text-2xl font-black text-cyan-400 mb-6 flex items-center gap-3 text-right">
+                       <span>🏠</span> دليل التنفيذ المنزلي
+                     </h4>
+                     <ul className="space-y-4 text-right">
+                       {aiReport.parentGuide.homeActivities?.slice(0, 4).map((a: string, i: number) => (
+                         <li key={i} className="flex items-start gap-3 text-slate-300">
+                           <span className="text-cyan-500">✔</span>
+                           <span>{a}</span>
+                         </li>
+                       ))}
+                     </ul>
+                  </div>
+                )}
+                {/* توصيات المدرسة */}
+                {aiReport.teacherRecommendations?.length > 0 && (
+                  <div className="bg-violet-500/5 border border-violet-500/20 p-8 rounded-[3rem]">
+                     <h4 className="text-2xl font-black text-violet-400 mb-6 flex items-center gap-3 text-right">
+                       <span>🏫</span> توصيات البيئة المدرسية
+                     </h4>
+                     <ul className="space-y-4 text-right">
+                       {aiReport.teacherRecommendations.slice(0, 4).map((r: string, i: number) => (
+                         <li key={i} className="flex items-start gap-3 text-slate-300">
+                           <span className="text-violet-500">💡</span>
+                           <span>{r}</span>
+                         </li>
+                       ))}
+                     </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Consultation Bridge - جسر الاستشارة */}
+              <div className="mt-20 p-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/30 rounded-[4rem] text-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="text-6xl mb-6">🤝</div>
+                <h3 className="text-4xl font-black text-white mb-4 italic">هل تحتاج إلى مساعدة احترافية في التنفيذ؟</h3>
+                <p className="text-slate-400 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                  بصيرة توفر لك نخبة من أفضل الأخصائيين (نطق، سلوك، صعوبات تعلم) لمتابعة حالة <span className="text-indigo-400 font-bold">{name}</span> وتطبيق الخطة أعلاه.
+                </p>
+                <div className="flex flex-col md:flex-row justify-center gap-6">
+                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-5 rounded-3xl font-black text-lg transition-all hover:scale-105 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                    📅 جدولة استشارة مجانية
+                  </button>
+                  <button className="bg-slate-800 hover:bg-slate-700 text-white px-10 py-5 rounded-3xl font-black text-lg transition-all">
+                    💬 تحدث مع منسق الحالة
+                  </button>
+                </div>
+              </div>
             </section>
-
-            {/* القسم 6: دليل الأهل */}
-            {aiReport.parentGuide && (
-              <section className="mb-16 bg-cyan-500/10 border border-cyan-500/30 p-12 rounded-[4rem]">
-                <h2 className="text-3xl font-black italic mb-10 text-cyan-400 flex items-center gap-4">
-                  <span className="text-4xl">👨‍👩‍👧</span> سادساً: دليل الأهل المنزلي
-                </h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div>
-                    <h4 className="text-cyan-300 font-black mb-4 text-lg">🏠 أنشطة منزلية مقترحة:</h4>
-                    <ul className="space-y-3">
-                      {aiReport.parentGuide.homeActivities?.map((a: string, i: number) => (
-                        <li key={i} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-3 text-slate-300 text-sm">
-                          ✅ {a}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-emerald-300 font-black mb-4 text-lg">💪 نقاط القوة يجب تعزيزها:</h4>
-                    <ul className="space-y-3">
-                      {aiReport.parentGuide.strengthsToReinforce?.map((s: string, i: number) => (
-                        <li key={i} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-3 text-slate-300 text-sm">
-                          ⭐ {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-amber-300 font-black mb-4 text-lg">⚠️ علامات تحتاج متابعة:</h4>
-                    <ul className="space-y-3">
-                      {aiReport.parentGuide.warningSignsToWatch?.map((w: string, i: number) => (
-                        <li key={i} className="bg-slate-900/60 border border-amber-700/30 rounded-2xl p-3 text-slate-300 text-sm">
-                          🔔 {w}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* القسم 7: توصيات المعلم */}
-            {aiReport.teacherRecommendations?.length > 0 && (
-              <section className="mb-16 bg-violet-500/10 border border-violet-500/30 p-12 rounded-[4rem]">
-                <h2 className="text-3xl font-black italic mb-8 text-violet-400 flex items-center gap-4">
-                  <span className="text-4xl">📋</span> سابعاً: توصيات للمعلم
-                </h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {aiReport.teacherRecommendations.map((rec: string, i: number) => (
-                    <div key={i} className="bg-slate-950/80 border border-violet-500/20 rounded-3xl p-5">
-                      <div className="text-violet-400 text-sm font-mono mb-2">TIP_{String(i + 1).padStart(2, '0')}</div>
-                      <p className="text-slate-300 text-lg leading-relaxed">{rec}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Follow-Up */}
-            <div className="bg-cyan-900/20 p-8 rounded-3xl border border-cyan-500/30 mb-12">
-              <h4 className="text-cyan-400 font-black mb-4 text-2xl">آلية المتابعة 📊</h4>
-              <p className="text-slate-300 text-lg leading-relaxed">{aiReport.followUp}</p>
-            </div>
 
           </div>
         )}

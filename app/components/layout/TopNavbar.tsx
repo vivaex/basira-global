@@ -21,6 +21,7 @@ export default function TopNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isChildMenuOpen, setIsChildMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isCloudActive, setIsCloudActive] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -36,14 +37,28 @@ export default function TopNavbar() {
     const p = getStudentProfile();
     if (p) setProfile(p);
     setAllProfiles(getAllProfiles());
+
+    // Check Cloud Status
+    authService.getSession().then(({ data }) => {
+      setIsCloudActive(!!data.session);
+    });
     
-    // Listen for storage changes (for sync across tabs)
+    // Listen for storage changes
     const handleStorage = () => {
       setProfile(getStudentProfile());
       setAllProfiles(getAllProfiles());
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+
+    // Listen for Auth changes to update Cloud Status icon
+    const { data: authListener } = authService.onAuthStateChange((_event, session) => {
+      setIsCloudActive(!!session);
+    });
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      authListener.subscription.unsubscribe();
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -166,7 +181,15 @@ export default function TopNavbar() {
                   className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-all"
                 >
                   <div className="text-right hidden sm:block">
-                    <p className="text-[0.6rem] text-cyan-400 font-mono tracking-widest leading-none mb-1 uppercase">{t('hero')}</p>
+                    <div className="flex items-center gap-1.5 justify-end mb-1">
+                      {isCloudActive && (
+                        <span className="flex items-center gap-1 text-[8px] font-black text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded-full border border-cyan-400/20">
+                           <span className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                           CLOUD ACTIVE
+                        </span>
+                      )}
+                      <p className="text-[0.6rem] text-cyan-400 font-mono tracking-widest leading-none uppercase">{t('hero')}</p>
+                    </div>
                     <p className="text-sm font-black text-white italic">{profile.name}</p>
                   </div>
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-lg shadow-lg">

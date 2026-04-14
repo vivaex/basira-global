@@ -3,6 +3,7 @@ import "./globals.css";
 import TopNavbar from "./components/layout/TopNavbar";
 import { LanguageProvider } from "./components/LanguageContext";
 import PageTransition from "./components/ui/PageTransition";
+import CloudSyncInitializer from "./components/CloudSyncInitializer";
 
 export const metadata: Metadata = {
   title: "منظومة بَصيرة | السيادة الرقمية لتشخيص صعوبات التعلم",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen text-slate-200" style={{ background: 'var(--bg-primary)', fontFamily: 'var(--font-arabic)' }}>
         <LanguageProvider>
+          <CloudSyncInitializer />
           <TopNavbar />
           <PageTransition>
             <main className="relative z-10 pt-28">
