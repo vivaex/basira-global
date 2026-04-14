@@ -1,4 +1,4 @@
-export type EngineType = 'QUIZ' | 'MEMORY' | 'CANVAS' | 'REACTION' | 'AI_CAMERA';
+export type EngineType = 'QUIZ' | 'MEMORY' | 'CANVAS' | 'REACTION' | 'AI_CAMERA' | 'VOICE';
 
 export interface TestRound {
   prompt?: string;
@@ -396,6 +396,25 @@ export const DIAGNOSTIC_TESTS: Record<string, TestConfig> = {
     { prompt: '📖 حصلت أختك على جائزة. كيف تشعر؟', options: ['فخور بها 🥳', 'غاضب 😡', 'حزين 😢'], correct: 'فخور بها 🥳' },
     { prompt: '📖 طفل جديد في الصف يجلس وحيداً. ماذا تفعل؟', options: ['أدعوه للعب معي 🤝', 'أتجاهله 🚶', 'أضحك عليه 😂'], correct: 'أدعوه للعب معي 🤝' },
   ]},
+
+  'voice-naming': {
+    id: 'voice-naming',
+    title: 'مختبر النطق والصدى (Voice Lab)',
+    engine: 'VOICE',
+    instructions: 'انظر إلى الصورة التي سيعرضها "علي" ثم قل اسمها بصوت واضح أمام الميكروفون. سنختبر طلاقتك ومخارج الحروف لديك.',
+    rounds: [
+      { stimulus: '✏️', prompt: 'ما هذا؟ قل الاسم بصوت واضح.', correct: 'قلم' },
+      { stimulus: '🍎', prompt: 'ما لون هذه الفاكهة؟ سمِّها:', correct: 'تفاحة' },
+      { stimulus: '🚗', prompt: 'ما هذه الوسيلة؟', correct: 'سيارة' },
+      { stimulus: '🌙', prompt: 'ماذا نرى في السماء ليلاً؟', correct: 'قمر' },
+      { stimulus: '🐪', prompt: 'ما اسم هذا الحيوان؟', correct: 'جمل' },
+      { stimulus: '🌳', prompt: 'ما هذه؟', correct: 'شجرة' },
+      { stimulus: '🐈', prompt: 'ما اسم هذا الكائن الأليف؟', correct: 'قطة' },
+      { stimulus: '🍊', prompt: 'ما اسم هذه الفاكهة؟', correct: 'برتقال' },
+      { stimulus: '🍌', prompt: 'قل اسم هذه الفاكهة:', correct: 'موز' },
+      { stimulus: '🏠', prompt: 'أين نعيش؟', correct: 'بيت' },
+    ]
+  },
 
 };
 

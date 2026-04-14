@@ -66,6 +66,7 @@ export const translations: Record<Language, any> = {
     'auditory': 'الرصد السمعي',
     'executive': 'الوظائف العليا',
     'cognitive': 'الإدراك العام',
+    'voice-naming': 'مختبر النطق والصدى',
     clinical_intelligence: 'تحليل الذكاء السريري',
 
     // New Professional Sectors
@@ -298,6 +299,7 @@ export const translations: Record<Language, any> = {
     'auditory': 'Auditory Screening',
     'executive': 'Executive Functions',
     'cognitive': 'General Cognition',
+    'voice-naming': 'Speech & Echo Lab',
     clinical_intelligence: 'Clinical Intelligence',
 
     // New Professional Sectors
