@@ -262,6 +262,8 @@ export function saveCaseStudy(caseStudy: CaseStudy): void {
 // ── Cloud Sync (Supabase Implementation) ──────────
 
 export async function syncProfileToCloud(profile: StudentProfile): Promise<void> {
+  if (!supabase) return; // Prevent crash if Supabase is not initialized
+
   const { data: { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id;
 
@@ -288,6 +290,8 @@ export async function syncProfileToCloud(profile: StudentProfile): Promise<void>
 }
 
 export async function syncSessionToCloud(session: TestSession, profileId: string): Promise<void> {
+  if (!supabase) return;
+
   const { error } = await supabase
     .from('test_sessions')
     .upsert({
@@ -307,6 +311,8 @@ export async function syncSessionToCloud(session: TestSession, profileId: string
 }
 
 export async function syncCaseStudyToCloud(profileId: string, caseStudy: CaseStudy): Promise<void> {
+  if (!supabase) return;
+
   const { error } = await supabase
     .from('case_studies')
     .upsert({
@@ -324,7 +330,7 @@ export async function syncCaseStudyToCloud(profileId: string, caseStudy: CaseStu
 }
 
 export async function syncAllData(): Promise<{ success: boolean; error?: string }> {
-  if (typeof window === 'undefined') return { success: false };
+  if (typeof window === 'undefined' || !supabase) return { success: false, error: 'Not in browser or Supabase missing' };
   
   const profiles = getAllProfiles();
   if (profiles.length === 0) return { success: true };
