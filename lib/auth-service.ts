@@ -12,6 +12,8 @@ export const authService = {
    * Supabase trigger will automatically create a row in the 'profiles' table.
    */
   async signUp(email: string, password: string, fullName: string): Promise<AuthResponse> {
+    if (!supabase) return { success: false, error: 'Database connection missing' };
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -30,6 +32,8 @@ export const authService = {
    * Sign in with email and password.
    */
   async signIn(email: string, password: string): Promise<AuthResponse> {
+    if (!supabase) return { success: false, error: 'Database connection missing' };
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -43,6 +47,7 @@ export const authService = {
    * Sign out current user.
    */
   async signOut(): Promise<void> {
+    if (!supabase) return;
     await supabase.auth.signOut();
   },
 
@@ -50,8 +55,10 @@ export const authService = {
    * Send a password reset email.
    */
   async resetPassword(email: string): Promise<AuthResponse> {
+    if (!supabase) return { success: false, error: 'Database connection missing' };
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.host}/auth/reset-password`,
     });
 
     if (error) return { success: false, error: error.message };
@@ -77,6 +84,7 @@ export const authService = {
    * Get the current active session.
    */
   async getSession() {
+    if (!supabase) return { data: { session: null }, error: null };
     return await supabase.auth.getSession();
   },
 
@@ -84,6 +92,7 @@ export const authService = {
    * Listen for authentication state changes.
    */
   onAuthStateChange(callback: (event: any, session: any) => void) {
+    if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
     return supabase.auth.onAuthStateChange(callback);
   }
 };

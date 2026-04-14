@@ -1,4 +1,3 @@
-// lib/storage.ts
 import { 
   StudentProfile, 
   TestSession, 
@@ -6,6 +5,16 @@ import {
   CaseStudy 
 } from './types';
 import { supabase } from './supabase';
+
+// Safe UUID generation for both Browser and Node.js
+const generateUUID = (): string => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  // Fallback for Node.js / Server-side
+  const crypto = require('crypto');
+  return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+};
 
 export const KEYS = {
   CURRENT_ID: 'basira_current_profile_id',
@@ -18,7 +27,7 @@ export const KEYS = {
 } as const;
 
 export function generateSessionId(): string {
-  return crypto.randomUUID();
+  return generateUUID();
 }
 
 // ── Profile Management ───────────────────────
@@ -56,7 +65,7 @@ export function getAllProfiles(): StudentProfile[] {
         profiles = parsed.map(p => {
           let updatedP = { ...p };
           if (!isUUID(p.id)) {
-            updatedP.id = crypto.randomUUID();
+            updatedP.id = generateUUID();
             changed = true;
           }
           if (!updatedP.preliminaryDiagnosis) {
@@ -140,7 +149,7 @@ export function getStudentProfile(): StudentProfile | null {
 
 export function createEmptyProfile(): StudentProfile {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     name: '', age: null, gender: 'not_specified',
     grade: '', primaryLanguage: 'العربية', otherLanguages: [],
     hasHearingIssues: 'no', hasVisionIssues: 'no',
