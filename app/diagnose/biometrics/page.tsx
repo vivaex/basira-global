@@ -51,11 +51,12 @@ export default function BiometricsLab() {
         console.log("Camera stream obtained with generic constraints.");
         setStreamObj(stream);
         setCameraActive(true);
-      } catch (fallbackErr) {
+      } catch (fallbackErr: any) {
         console.error("Camera access failed completely:", fallbackErr);
+        const errDetails = `${fallbackErr?.name}: ${fallbackErr?.message}`;
         alert(language === 'ar' 
-          ? "تعذر الوصول للكاميرا. يرجى التأكد من عدم وجود برنامج آخر يستخدم الكاميرا، والتأكد من منح الإذن للموقع من قفل الأمان بجانب رابط الموقع." 
-          : "Could not access camera. Please ensure no other app is using it and that you granted permission via the lock icon in the address bar.");
+          ? `تعذر الوصول للكاميرا.\nالسبب التقني: ${errDetails}\n\nيرجى التأكد من عدم وجود برنامج آخر يستخدم الكاميرا (مثل Zoom/Teams)، والتأكد من منح الإذن من قفل الأمان بجانب الرابط، والتأكد من إعدادات الخصوصية في الويندوز.` 
+          : `Could not access camera.\nTechnical Reason: ${errDetails}\n\nPlease ensure no other app is using it, permissions are granted in the browser, and Windows privacy settings allow camera access.`);
       }
     }
   };
