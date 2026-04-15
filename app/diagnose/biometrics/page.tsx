@@ -26,7 +26,13 @@ export default function BiometricsLab() {
 
   const startCamera = async () => {
     console.log("Attempting to start camera...");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert(language === 'ar' ? "متصفحك لا يدعم الوصول للكاميرا." : "Your browser does not support camera access.");
+      return;
+    }
+
     try {
+      // Tier 1: Try with ideal constraints
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           width: { ideal: 640 }, 
@@ -34,12 +40,23 @@ export default function BiometricsLab() {
           facingMode: "user"
         } 
       });
-      console.log("Camera stream obtained successfully.");
+      console.log("Camera stream obtained with ideal constraints.");
       setStreamObj(stream);
       setCameraActive(true);
     } catch (err) {
-      console.error("Camera access error:", err);
-      alert(language === 'ar' ? "يرجى التأكد من توصيل الكاميرا والسماح بالوصول إليها من إعدادات المتصفح." : "Please ensure your camera is connected and allowed in browser settings.");
+      console.warn("Camera failed with ideal constraints, trying fallback...", err);
+      try {
+        // Tier 2: Try with generic video true
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        console.log("Camera stream obtained with generic constraints.");
+        setStreamObj(stream);
+        setCameraActive(true);
+      } catch (fallbackErr) {
+        console.error("Camera access failed completely:", fallbackErr);
+        alert(language === 'ar' 
+          ? "تعذر الوصول للكاميرا. يرجى التأكد من عدم وجود برنامج آخر يستخدم الكاميرا، والتأكد من منح الإذن للموقع من قفل الأمان بجانب رابط الموقع." 
+          : "Could not access camera. Please ensure no other app is using it and that you granted permission via the lock icon in the address bar.");
+      }
     }
   };
 
