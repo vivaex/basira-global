@@ -64,14 +64,22 @@ export default function BiometricsLab() {
     stopTracking();
     if (streamObj) {
       streamObj.getTracks().forEach(track => track.stop());
+    } else if (videoRef.current?.srcObject) {
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
     }
     setCameraActive(false);
     setStreamObj(null);
   };
 
+  // Cleanup should ONLY run on component unmount, so empty dependency array.
   useEffect(() => {
-    return () => stopCamera(); // Cleanup on unmount
-  }, [streamObj]);
+    return () => {
+      stopTracking();
+      if (videoRef.current?.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stopTracking]);
 
   const isRtl = language === 'ar';
 
