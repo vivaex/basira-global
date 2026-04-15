@@ -25,21 +25,33 @@ export default function BiometricsLab() {
   } = useFaceTracking(videoRef);
 
   const startCamera = async () => {
+    console.log("Attempting to start camera...");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 }, 
+          height: { ideal: 480 },
+          facingMode: "user"
+        } 
+      });
+      console.log("Camera stream obtained successfully.");
       setStreamObj(stream);
       setCameraActive(true);
     } catch (err) {
-      console.error("Camera error:", err);
-      alert("يرجى السماح بالوصول للكاميرا.");
+      console.error("Camera access error:", err);
+      alert(language === 'ar' ? "يرجى التأكد من توصيل الكاميرا والسماح بالوصول إليها من إعدادات المتصفح." : "Please ensure your camera is connected and allowed in browser settings.");
     }
   };
 
   useEffect(() => {
     if (cameraActive && videoRef.current && streamObj) {
+      console.log("Attaching stream to video element...");
       videoRef.current.srcObject = streamObj;
-      videoRef.current.play().catch(console.error);
-      startTracking();
+      videoRef.current.onloadedmetadata = () => {
+        console.log("Video metadata loaded, playing...");
+        videoRef.current?.play().catch(e => console.error("Play error:", e));
+        startTracking();
+      };
     }
   }, [cameraActive, streamObj, startTracking]);
 
