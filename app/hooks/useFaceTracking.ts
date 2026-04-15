@@ -144,12 +144,16 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
                 rppgBufferRef.current.shift();
               }
 
-              // Process metrics every 2 seconds
-              if (rppgBufferRef.current.length >= 45 && rppgBufferRef.current.length % 30 === 0) {
-                 const { bpm, stress } = processRPPGSignal(rppgBufferRef.current, 15);
-                 if (bpm > 0) {
-                    setHeartRate(bpm);
-                    setStressLevel(stress);
+              // Process metrics actively if we have at least 15 frames
+              if (rppgBufferRef.current.length >= 15) {
+                 // update exactly around every 1.5 seconds worth of frames (roughly)
+                 // to ensure the UI is extremely responsive
+                 if (rppgBufferRef.current.length % 15 === 0) {
+                    const { bpm, stress } = processRPPGSignal(rppgBufferRef.current, 15);
+                    if (bpm > 0) {
+                       setHeartRate(bpm);
+                       setStressLevel(stress);
+                    }
                  }
               }
             }
@@ -158,9 +162,14 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
             if (currentFaceStateRef.current) {
                 setHasFace(false);
                 currentFaceStateRef.current = false;
+                // clear biometrics when face vanishes
+                setHeartRate(0);
+                setStressLevel(0);
             }
         }
-    } catch (error) { }
+    } catch (error) { 
+        console.error("Face detection error:", error);
+    }
 
     animationRef.current = requestAnimationFrame(detectFace);
   }, [videoRef]);
