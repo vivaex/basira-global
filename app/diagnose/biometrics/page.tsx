@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { HeartPulse } from 'lucide-react';
 import { useFaceTracking } from '@/app/hooks/useFaceTracking';
 import GlassCard from '@/app/components/ui/GlassCard';
 import NeonButton from '@/app/components/ui/NeonButton';
@@ -184,8 +183,8 @@ export default function BiometricsLab() {
                           {heartRate > 0 ? Math.round(heartRate) : '--'}
                         </p>
                       </div>
-                      <div className="w-12 h-12 rounded-full bg-rose-500/20 flex items-center justify-center shadow-inner">
-                        <HeartPulse className="w-6 h-6 text-rose-500 animate-pulse" />
+                      <div className="w-12 h-12 rounded-full bg-rose-500/20 flex items-center justify-center shadow-inner text-2xl animate-pulse">
+                        ❤️
                       </div>
                     </div>
                   </div>
