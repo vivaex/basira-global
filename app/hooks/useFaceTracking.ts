@@ -1,5 +1,6 @@
 'use client';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { checkLighting, extractGreenChannel, processRPPGSignal } from '@/lib/rppgUtils';
 
 export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | null>) {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -8,6 +9,11 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
   const [blinkCount, setBlinkCount] = useState(0);
   const [hasFace, setHasFace] = useState(false);
 
+  // New Biometric States
+  const [heartRate, setHeartRate] = useState(0);
+  const [stressLevel, setStressLevel] = useState(0);
+  const [lightingWarning, setLightingWarning] = useState(false);
+
   const faceLandmarkerRef = useRef<any>(null);
   const animationRef = useRef<number>(0);
   const isTrackingRef = useRef(false);
@@ -15,6 +21,12 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
   const lastEyelidDist = useRef(0);
   const lastUpdateRef = useRef(0);
   const currentFaceStateRef = useRef(false);
+  
+  // rPPG specific refs
+  const rppgBufferRef = useRef<number[]>([]);
+  const lastRPPGUpdateRef = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   
   const initModel = useCallback(async () => {
     try {
@@ -33,6 +45,16 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
         numFaces: 1
       });
       setIsModelLoaded(true);
+
+      // Initialize offscreen canvas for rPPG
+      if (!canvasRef.current && typeof document !== 'undefined') {
+        const canvas = document.createElement('canvas');
+        canvas.width = 50;  // small ROI width
+        canvas.height = 50; // small ROI height
+        canvasRef.current = canvas;
+        ctxRef.current = canvas.getContext('2d', { willReadFrequently: true });
+      }
+
     } catch (err) {
       console.error("Failed to load FaceLandmarker", err);
     }
@@ -79,13 +101,58 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
                 setGazeMetrics({ x: avgIrisX, y: avgIrisY, jitter: Math.abs(avgIrisX - 0.5) });
             }
 
-            // 3. Blink Detection (Eyelids: 159 upper, 145 lower) - High frequency needed, but we can still optimize
+            // 3. Blink Detection (Eyelids: 159 upper, 145 lower)
             const dist = Math.abs(landmarks[159].y - landmarks[145].y);
             if (lastEyelidDist.current > 0.015 && dist < 0.010) {
-                // Rapid closure detected
                 setBlinkCount(c => c + 1);
             }
             lastEyelidDist.current = dist;
+
+            // 4. Ambient Biometrics (rPPG) - ~15 FPS target
+            if (now - lastRPPGUpdateRef.current > 66 && ctxRef.current && videoRef.current.videoWidth > 0) {
+              lastRPPGUpdateRef.current = now;
+              const videoWidth = videoRef.current.videoWidth;
+              const videoHeight = videoRef.current.videoHeight;
+              
+              // Get Forehead region (landmark 151 roughly)
+              const forehead = landmarks[151];
+              // Convert normalized coordinates to pixel coordinates
+              const cx = Math.max(0, Math.min(forehead.x * videoWidth, videoWidth));
+              const cy = Math.max(0, Math.min(forehead.y * videoHeight, videoHeight));
+              
+              // Define a small bounding box (50x50 pixels) around the forehead
+              const roiSize = 50;
+              const sx = Math.max(0, cx - roiSize / 2);
+              const sy = Math.max(0, cy - roiSize / 2);
+
+              // Draw cropped forehead area to hidden canvas
+              ctxRef.current.drawImage(videoRef.current, sx, sy, roiSize, roiSize, 0, 0, roiSize, roiSize);
+              const imgData = ctxRef.current.getImageData(0, 0, roiSize, roiSize);
+              
+              // Check lighting (throttle state updates)
+              const badLighting = !checkLighting(imgData);
+              if (shouldUpdateMetrics) { // Piggyback on 5Hz throttle for UI updates
+                setLightingWarning(badLighting);
+              }
+
+              // Extract green channel logic
+              const greenAvg = extractGreenChannel(imgData);
+              rppgBufferRef.current.push(greenAvg);
+              
+              // Keep buffer at last 150 frames (~10 seconds at 15fps)
+              if (rppgBufferRef.current.length > 150) {
+                rppgBufferRef.current.shift();
+              }
+
+              // Process metrics every 2 seconds
+              if (rppgBufferRef.current.length >= 45 && rppgBufferRef.current.length % 30 === 0) {
+                 const { bpm, stress } = processRPPGSignal(rppgBufferRef.current, 15);
+                 if (bpm > 0) {
+                    setHeartRate(bpm);
+                    setStressLevel(stress);
+                 }
+              }
+            }
 
         } else {
             if (currentFaceStateRef.current) {
@@ -104,6 +171,9 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
     isTrackingRef.current = true;
     setTremorScore(0);
     setBlinkCount(0);
+    setHeartRate(0);
+    setStressLevel(0);
+    rppgBufferRef.current = [];
     lastNosePos.current = null;
     detectFace();
   }, [isModelLoaded, initModel, detectFace]);
@@ -113,8 +183,10 @@ export function useFaceTracking(videoRef: React.RefObject<HTMLVideoElement | nul
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     lastNosePos.current = null;
     currentFaceStateRef.current = false;
+    rppgBufferRef.current = [];
     setHasFace(false);
   }, []);
 
-  return { isModelLoaded, tremorScore, gazeMetrics, blinkCount, hasFace, startTracking, stopTracking };
+  return { isModelLoaded, tremorScore, gazeMetrics, blinkCount, hasFace, heartRate, stressLevel, lightingWarning, startTracking, stopTracking };
 }
+
