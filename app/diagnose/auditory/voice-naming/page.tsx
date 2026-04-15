@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSpeechAnalysis } from '@/hooks/useSpeechAnalysis';
+import { useSpeechAnalysis } from '@/app/hooks/useSpeechAnalysis';
 import { calculateVoiceMatchScore } from '@/lib/voice-utils';
 import { DIAGNOSTIC_TESTS } from '@/lib/testsData';
 import { saveTestSession, generateUUID } from '@/lib/storage';

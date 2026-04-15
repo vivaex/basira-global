@@ -7,7 +7,7 @@ import {
 import { supabase } from './supabase';
 
 // Safe UUID generation for both Browser and Node.js
-const generateUUID = (): string => {
+export const generateUUID = (): string => {
   if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
     return window.crypto.randomUUID();
   }
