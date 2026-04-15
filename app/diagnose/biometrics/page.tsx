@@ -179,7 +179,12 @@ export default function BiometricsLab() {
                       </div>
                       <div>
                         <div className="text-sm text-slate-400">{isRtl ? 'معدل النبض (BPM)' : 'Heart Rate (BPM)'}</div>
-                        <div className="text-4xl font-black text-white">{heartRate > 0 ? heartRate : '--'}</div>
+                        <p className="text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
+                          {heartRate > 0 ? Math.round(heartRate) : '--'}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 rounded-full bg-rose-500/20 flex items-center justify-center shadow-inner">
+                        <HeartPulse className="w-6 h-6 text-rose-500 animate-pulse" />
                       </div>
                     </div>
                   </div>
@@ -193,7 +198,7 @@ export default function BiometricsLab() {
                       <div>
                         <div className="text-sm text-slate-400">{isRtl ? 'مؤشر التوتر المعرفي' : 'Cognitive Stress Index'}</div>
                         <div className="text-4xl font-black text-white">
-                           {stressLevel > 0 ? `${stressLevel}%` : '--'}
+                           {stressLevel > 0 ? `${Math.round(stressLevel)}%` : '--'}
                         </div>
                       </div>
                     </div>
