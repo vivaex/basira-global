@@ -8,6 +8,7 @@ const AUDITORY_LABS = [
   { id: 'speech-in-noise', title: 'الاستماع المزدوج (APD)', desc: 'هل يمكنك التقاط الكلمة الصحيحة وسط الضجيج؟ مقياس المعالجة السمعية', icon: '🎧', color: 'from-cyan-400 to-blue-500' },
   { id: 'phonemic-awareness', title: 'الوعي الفونيمي (Elision)', desc: 'احذف حرفاً من الكلمة — ماذا يتبقى؟', icon: '🧩', color: 'from-purple-400 to-pink-500' },
   { id: 'auditory-memory', title: 'الذاكرة السمعية (Digit Span)', desc: 'استمع لسلسلة أرقام وأعدها بنفس الترتيب', icon: '🧠', color: 'from-green-400 to-emerald-600' },
+  { id: 'voice-naming', title: 'مختبر النطق والصدى', desc: 'تسمية سريعة للأشياء عبر الميكروفون لتقييم مخارج الحروف', icon: '🎙️', color: 'from-blue-400 to-indigo-600' },
   { id: 'rhyming', title: 'القافية والسجع', desc: 'اختر الكلمة التي تقفّي مع الكلمة المعروضة', icon: '🎵', color: 'from-yellow-400 to-orange-500' },
 ];
 

@@ -28,7 +28,6 @@ const LABS = [
   { id: 'reading',   title: 'المهارات القرائية', icon: '📖', tag: 'READING',   color: 'emerald' as const },
   { id: 'motor',     title: 'التآزر الحركي',     icon: '🏃‍♂️', tag: 'MOTOR',     color: 'rose' as const },
   { id: 'language',  title: 'البناء اللغوي',     icon: '💬', tag: 'LANGUAGE',  color: 'indigo' as const },
-  { id: 'voice-naming', title: 'مختبر النطق والصدى', icon: '🎙️', tag: 'LANGUAGE', color: 'rose' as const },
   { id: 'auditory',  title: 'الرصد السمعي',      icon: '👂', tag: 'AUDITORY',  color: 'cyan' as const },
   { id: 'executive', title: 'الوظائف العليا',    icon: '⚙️', tag: 'EXECUTIVE', color: 'rose' as const },
   { id: 'cognitive', title: 'الإدراك العام',     icon: '🧠', tag: 'COGNITIVE', color: 'amber' as const },
