@@ -21,6 +21,7 @@ import {
 import { getDailyMissions, checkMissionProgress, claimMissionReward, DailyMission } from '@/lib/missions';
 
 const LABS = [
+  { id: 'biometrics', title: 'المؤشرات الحيوية', icon: '🫀', tag: 'LAB',      color: 'emerald' as const },
   { id: 'math',      title: 'المنطق الرقمي',    icon: '🔢', tag: 'MATH',      color: 'indigo' as const },
   { id: 'visual',    title: 'البصر المكاني',     icon: '👁️', tag: 'VISUAL',    color: 'cyan' as const },
   { id: 'attention', title: 'التركيز العميق',    icon: '🎯', tag: 'ATTENTION', color: 'rose' as const },

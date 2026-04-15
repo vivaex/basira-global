@@ -94,6 +94,7 @@ export const translations: Record<Language, any> = {
     clinician_hub: 'مركز الأخصائي المتطور',
     dev_history_short: 'التاريخ التطوري',
     teacher_form_short: 'تقييم المعلم',
+    cat_biometrics: 'مختبر المؤشرات الحيوية',
 
 
     // Diagnostic IDs & Slugs
@@ -331,6 +332,7 @@ export const translations: Record<Language, any> = {
     clinician_hub: 'Advanced Clinician Hub',
     dev_history_short: 'Dev. History',
     teacher_form_short: 'Teacher Rating',
+    cat_biometrics: 'Biometrics Lab',
 
 
     // Parent Dashboard
