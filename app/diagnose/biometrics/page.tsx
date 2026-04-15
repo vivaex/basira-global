@@ -27,18 +27,21 @@ export default function BiometricsLab() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
       setStreamObj(stream);
       setCameraActive(true);
-      startTracking();
     } catch (err) {
       console.error("Camera error:", err);
       alert("يرجى السماح بالوصول للكاميرا.");
     }
   };
+
+  useEffect(() => {
+    if (cameraActive && videoRef.current && streamObj) {
+      videoRef.current.srcObject = streamObj;
+      videoRef.current.play().catch(console.error);
+      startTracking();
+    }
+  }, [cameraActive, streamObj, startTracking]);
 
   const stopCamera = () => {
     stopTracking();
