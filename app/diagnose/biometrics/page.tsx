@@ -32,26 +32,14 @@ export default function BiometricsLab() {
     }
 
     try {
-      // Tier 1: Try with ideal constraints
+      // Very simple constraint to avoid driver hangs on some Windows/Lenovo laptops
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 }, 
-          height: { ideal: 480 },
-          facingMode: "user"
-        } 
+        video: true 
       });
-      console.log("Camera stream obtained with ideal constraints.");
+      console.log("Camera stream obtained with generic constraints.");
       setStreamObj(stream);
       setCameraActive(true);
-    } catch (err) {
-      console.warn("Camera failed with ideal constraints, trying fallback...", err);
-      try {
-        // Tier 2: Try with generic video true
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        console.log("Camera stream obtained with generic constraints.");
-        setStreamObj(stream);
-        setCameraActive(true);
-      } catch (fallbackErr: any) {
+    } catch (fallbackErr: any) {
         console.error("Camera access failed completely:", fallbackErr);
         const errDetails = `${fallbackErr?.name}: ${fallbackErr?.message}`;
         alert(language === 'ar' 
