@@ -40,12 +40,11 @@ export default function BiometricsLab() {
       setStreamObj(stream);
       setCameraActive(true);
     } catch (fallbackErr: any) {
-        console.error("Camera access failed completely:", fallbackErr);
-        const errDetails = `${fallbackErr?.name}: ${fallbackErr?.message}`;
-        alert(language === 'ar' 
-          ? `تعذر الوصول للكاميرا.\nالسبب التقني: ${errDetails}\n\nيرجى التأكد من عدم وجود برنامج آخر يستخدم الكاميرا (مثل Zoom/Teams)، والتأكد من منح الإذن من قفل الأمان بجانب الرابط، والتأكد من إعدادات الخصوصية في الويندوز.` 
-          : `Could not access camera.\nTechnical Reason: ${errDetails}\n\nPlease ensure no other app is using it, permissions are granted in the browser, and Windows privacy settings allow camera access.`);
-      }
+      console.error("Camera access failed completely:", fallbackErr);
+      const errDetails = `${fallbackErr?.name}: ${fallbackErr?.message}`;
+      alert(language === 'ar' 
+        ? `تعذر الوصول للكاميرا.\nالسبب التقني: ${errDetails}\n\nيرجى التأكد من عدم وجود برنامج آخر يستخدم الكاميرا (مثل Zoom/Teams)، والتأكد من منح الإذن من قفل الأمان بجانب الرابط، والتأكد من إعدادات الخصوصية في الويندوز.` 
+        : `Could not access camera.\nTechnical Reason: ${errDetails}\n\nPlease ensure no other app is using it, permissions are granted in the browser, and Windows privacy settings allow camera access.`);
     }
   };
 
@@ -113,7 +112,7 @@ export default function BiometricsLab() {
               <div className="w-full relative rounded-2xl overflow-hidden shadow-2xl ring-4 ring-emerald-500/20">
                 <video 
                   ref={videoRef} 
-                  className="w-full h-auto transform -scale-x-100" // Mirror
+                  className="w-full h-auto transform -scale-x-100"
                   muted 
                   playsInline 
                 />
