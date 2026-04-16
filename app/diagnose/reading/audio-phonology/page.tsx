@@ -8,6 +8,8 @@ import {
 } from '@/lib/studentProfile';
 import { ClinicalScoringEngine } from '@/lib/domain/scoring/engine';
 import ClinicalPlayerEngine from '@/app/components/ui/ClinicalPlayerEngine';
+import { useVoiceEmotion } from '@/app/hooks/useVoiceEmotion';
+import VoiceWaveform from '@/app/components/ui/VoiceWaveform';
 
 /**
  * Phonological Awareness (CTOPP-2 Compliance)
@@ -49,6 +51,7 @@ const PHONOLOGY_STIMULI: Record<'A' | 'B' | 'C', PhonologyTrial[]> = {
 export default function AudioPhonologyTest() {
   const [currentTrial, setCurrentTrial] = useState<PhonologyTrial | null>(null);
   const [transcript, setTranscript] = useState('');
+  const { metrics, startMonitoring, stopMonitoring, waveformData, isRecording: isMicActive } = useVoiceEmotion();
   const recognitionRef = useRef<any>(null);
   const trialStartTime = useRef<number>(0);
   const isCorrectFound = useRef<boolean>(false);
@@ -136,7 +139,10 @@ export default function AudioPhonologyTest() {
         useEffect(() => {
           if (!isSpeaking && currentTrial && trialStartTime.current === 0) {
             trialStartTime.current = performance.now();
-            try { recognitionRef.current?.start(); } catch(e) {}
+            try { 
+              recognitionRef.current?.start(); 
+              startMonitoring();
+            } catch(e) {}
           }
         }, [isSpeaking, currentTrial]);
 
@@ -153,10 +159,18 @@ export default function AudioPhonologyTest() {
                   timestampDisplayed: trialStartTime.current,
                   timestampResponded: now,
                   responseValue: transcript,
-                  metadata: { taskType: currentTrial.taskType, prompt: currentTrial.prompt }
+                  metadata: { 
+                    taskType: currentTrial.taskType, 
+                    prompt: currentTrial.prompt,
+                    vocalStress: metrics.emotion,
+                    pitch: metrics.pitch
+                  }
                 });
 
-                try { recognitionRef.current?.stop(); } catch(e) {}
+                try { 
+                  recognitionRef.current?.stop(); 
+                  stopMonitoring();
+                } catch(e) {}
                 setTimeout(() => generateTrial(difficulty, ageVersion), 1000);
              }
           }
@@ -166,18 +180,33 @@ export default function AudioPhonologyTest() {
           <div className="flex flex-col items-center justify-center gap-10">
             <div className="text-[12rem] animate-float drop-shadow-2xl">👂</div>
             
-            <div className={`p-12 rounded-[4rem] border-4 transition-all duration-700 min-w-[400px] text-center ${isSpeaking ? 'border-indigo-400 bg-indigo-500/10 scale-105' : 'border-white/10 bg-white/5'}`}>
+            <div className={`p-10 rounded-[3rem] border-4 transition-all duration-700 min-w-[500px] text-center ${isSpeaking ? 'border-indigo-400 bg-indigo-500/10 scale-105' : 'border-white/10 bg-white/5'}`}>
                {!trialStartTime.current ? (
                  <button onClick={startTask} className="btn-primary px-16 py-8 text-3xl">
                    <span>إسـماع السؤال 🔊</span>
                  </button>
                ) : (
-                 <div className="animate-fade-in">
-                    <div className="flex justify-center gap-4 mb-6">
+                 <div className="animate-fade-in w-full">
+                    <div className="flex justify-center gap-4 mb-6 items-center">
                        <span className="w-4 h-4 bg-emerald-500 rounded-full animate-ping" />
-                       <span className="text-emerald-400 font-bold uppercase tracking-tighter">أنا أسمعك الآن...</span>
+                       <span className="text-emerald-400 font-bold uppercase tracking-widest text-xs">AI Voice Analysis Active</span>
                     </div>
-                    <p className="text-4xl font-mono text-white/50 italic">"{transcript || '...'}"</p>
+                    
+                    <div className="mb-6 px-4">
+                       <VoiceWaveform 
+                         data={waveformData} 
+                         emotion={metrics.emotion} 
+                         isRecording={isMicActive} 
+                       />
+                    </div>
+
+                    <p className="text-4xl font-mono text-white/50 italic mb-2">"{transcript || '...'}"</p>
+                    
+                    {metrics.pitch > 0 && (
+                       <p className="text-[0.6rem] font-bold text-indigo-400/50 uppercase tracking-[0.3em]">
+                         Vocal Pitch: {Math.round(metrics.pitch)}Hz | Intensity: {Math.round(metrics.energy)}%
+                       </p>
+                    )}
                  </div>
                )}
             </div>

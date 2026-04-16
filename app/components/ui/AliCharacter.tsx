@@ -7,6 +7,7 @@ export type AliState = 'idle' | 'success' | 'focus' | 'thinking';
 interface AliCharacterProps {
   name?: string;
   state: AliState;
+  emotion?: 'confident' | 'stressed' | 'hesitant' | 'neutral';
   variant?: 'compact' | 'full';
   className?: string;
 }
@@ -14,6 +15,7 @@ interface AliCharacterProps {
 const AliCharacter: React.FC<AliCharacterProps> = ({ 
   name = 'بطلنا', 
   state = 'idle', 
+  emotion = 'neutral',
   variant = 'compact',
   className = ''
 }) => {
@@ -45,13 +47,22 @@ const AliCharacter: React.FC<AliCharacterProps> = ({
   };
 
   const bubbleText = useMemo(() => {
+    if (state === 'success') return `أحسنت يا ${name}!`;
+    if (state === 'thinking' || state === 'idle') {
+      switch(emotion) {
+        case 'stressed': return `أنت بطل، خذ نفساً عميقاً... 💨`;
+        case 'hesitant': return `لا تقلق، أنا أسمعك بوضوح... ✨`;
+        case 'confident': return `واااو! صوتك قوي وواضح! 🚀`;
+        default: break;
+      }
+    }
+
     switch(state) {
-      case 'success': return `أحسنت يا ${name}!`;
       case 'focus': return `ركز يا ${name}...`;
       case 'thinking': return `ممم، دعنا نفكر...`;
       default: return `أهلاً بك يا ${name}`;
     }
-  }, [state, name]);
+  }, [state, name, emotion]);
 
   const stateColor = state === 'focus' ? 'var(--accent-cyan)' : 
                    state === 'success' ? '#10b981' : 
@@ -105,15 +116,29 @@ const AliCharacter: React.FC<AliCharacterProps> = ({
             {/* Eyes */}
             <div className="flex gap-3 mt-2">
               <div className="w-2.5 h-2.5 bg-slate-900 rounded-full relative">
-                {state === 'focus' && <motion.div animate={{ opacity: [0, 1] }} className="absolute inset-0 bg-cyan-400 rounded-full blur-[2px]" />}
+                {(state === 'focus' || emotion === 'confident') && (
+                  <motion.div animate={{ opacity: [0, 1] }} className="absolute inset-0 bg-cyan-400 rounded-full blur-[2px]" />
+                )}
+                {emotion === 'stressed' && (
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} className="absolute inset-0 bg-rose-400/50 rounded-full blur-[1px]" />
+                )}
               </div>
               <div className="w-2.5 h-2.5 bg-slate-900 rounded-full relative">
-                {state === 'focus' && <motion.div animate={{ opacity: [0, 1] }} className="absolute inset-0 bg-cyan-400 rounded-full blur-[2px]" />}
+                {(state === 'focus' || emotion === 'confident') && (
+                  <motion.div animate={{ opacity: [0, 1] }} className="absolute inset-0 bg-cyan-400 rounded-full blur-[2px]" />
+                )}
+                {emotion === 'stressed' && (
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} className="absolute inset-0 bg-rose-400/50 rounded-full blur-[1px]" />
+                )}
               </div>
             </div>
             {/* Mouth */}
             <motion.div 
-              animate={state === 'success' ? { scaleY: 1.5 } : { scaleY: 1 }}
+              animate={
+                state === 'success' || emotion === 'confident' ? { scaleY: 1.5, borderRadius: '50%' } : 
+                emotion === 'stressed' ? { scaleX: 0.8, y: 1 } :
+                { scaleY: 1 }
+              }
               className="mt-2 w-4 h-1 bg-slate-400 rounded-full" 
             />
           </motion.div>

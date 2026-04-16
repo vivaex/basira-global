@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSpeechAnalysis } from '@/app/hooks/useSpeechAnalysis';
+import { useVoiceEmotion } from '@/app/hooks/useVoiceEmotion';
 import { calculateVoiceMatchScore } from '@/lib/voice-utils';
 import { DIAGNOSTIC_TESTS } from '@/lib/testsData';
 import { saveTestSession, generateUUID } from '@/lib/storage';
@@ -12,6 +13,7 @@ import { useSound } from '@/hooks/useSound';
 import AliCharacter from '@/app/components/ui/AliCharacter';
 import GlassCard from '@/app/components/ui/GlassCard';
 import NeonButton from '@/app/components/ui/NeonButton';
+import VoiceWaveform from '@/app/components/ui/VoiceWaveform';
 import AnimatedWrapper from '@/app/components/ui/AnimatedWrapper';
 import NetworkBackground from '@/app/components/layout/NetworkBackground';
 
@@ -20,6 +22,7 @@ export default function VoiceNamingLab() {
   const { t, language } = useLanguage();
   const { play } = useSound();
   const { isListening, transcript, startListening, stopListening } = useSpeechAnalysis();
+  const { metrics, startMonitoring, stopMonitoring, waveformData } = useVoiceEmotion();
 
   const testConfig = DIAGNOSTIC_TESTS['voice-naming'];
   const [currentRound, setCurrentRound] = useState(0);
@@ -45,11 +48,13 @@ export default function VoiceNamingLab() {
     setGameState('playing');
     setAliState('thinking');
     startListening();
+    startMonitoring();
     play('click');
   };
 
   const handleCorrectAnswer = (spoken: string, score: number) => {
     stopListening();
+    stopMonitoring();
     play('success');
     setAliState('success');
     setFeedbackType('success');
@@ -71,6 +76,7 @@ export default function VoiceNamingLab() {
         setAliState('thinking');
         setFeedbackType(null);
         startListening();
+        startMonitoring();
       } else {
         finishTest([...results, newResult]);
       }
@@ -91,7 +97,7 @@ export default function VoiceNamingLab() {
       testCategory: 'AUDITORY',
       testDate: new Date().toISOString(),
       rawScore: totalScore,
-      notes: `Voice evaluation (Auditory context). Transcripts: ${finalResults.map(r => `${r.target}->${r.spoken}`).join(', ')}`
+      notes: `Voice evaluation (Auditory context). Transcripts: ${finalResults.map(r => `${r.target}->${r.spoken}`).join(', ')}. Emotional profile: ${JSON.stringify(metrics)}`
     });
   };
 
@@ -151,7 +157,11 @@ export default function VoiceNamingLab() {
                   
                   {/* Ali Side */}
                   <div className="flex flex-col items-center">
-                    <AliCharacter state={aliState as any} variant="default" />
+                    <AliCharacter 
+                      state={aliState as any} 
+                      emotion={metrics.emotion}
+                      variant="default" 
+                    />
                     <div className="mt-8 bg-slate-900/80 backdrop-blur-xl border border-white/10 p-6 rounded-[2rem] text-center w-full">
                       <p className="text-cyan-400 font-mono text-xs uppercase tracking-widest mb-2">Ali is Listening...</p>
                       <h3 className="text-xl font-black italic">{testConfig.rounds[currentRound].prompt}</h3>
@@ -168,17 +178,28 @@ export default function VoiceNamingLab() {
                       {testConfig.rounds[currentRound].stimulus}
                     </span>
                     
-                    <div className="h-20 flex flex-col items-center justify-center">
+                    <div className="h-28 w-full mt-4">
+                      <VoiceWaveform 
+                        data={waveformData} 
+                        emotion={metrics.emotion} 
+                        isRecording={isListening} 
+                      />
+                    </div>
+
+                    <div className="h-20 flex flex-col items-center justify-center mt-4">
                       {isListening ? (
-                        <div className="flex gap-1">
-                          {[1,2,3,4].map(i => (
-                            <motion.div 
-                              key={i}
-                              animate={{ height: [10, 30, 10] }}
-                              transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
-                              className="w-1.5 bg-cyan-500 rounded-full"
-                            />
-                          ))}
+                        <div className="text-center">
+                           <p className="text-[0.6rem] font-bold uppercase tracking-widest text-cyan-400/50 mb-2">Analyzing Pitch: {Math.round(metrics.pitch)}Hz</p>
+                           <div className="flex gap-1 justify-center">
+                              {[1,2,3,4].map(i => (
+                                <motion.div 
+                                  key={i}
+                                  animate={{ height: [10, 30, 10] }}
+                                  transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
+                                  className="w-1.5 bg-cyan-500 rounded-full"
+                                />
+                              ))}
+                           </div>
                         </div>
                       ) : (
                         <p className="text-emerald-400 font-black text-3xl italic animate-bounce">
